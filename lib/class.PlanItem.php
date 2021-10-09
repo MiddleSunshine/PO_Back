@@ -72,7 +72,7 @@ class PlanItem extends Base{
 
     public function SaveWithoutPPID(){
         $this->post=json_decode($this->post,1);
-        $this->post['PPID']=$this->getNextPlanItem($this->post['PID']);
+        empty($this->post['PPID']) && $this->post['PPID']=$this->getNextPlanItem($this->post['PID']);
         $this->post=json_encode($this->post);
         return $this->Save();
     }
@@ -93,7 +93,7 @@ class PlanItem extends Base{
         // 有 FinishTime 的数据
         $FinishTime=[];
         $sql=sprintf(
-            "select ID,Name,FinishTime,PID from %s where Deleted=0 and FinishTime between '%s' and '%s';",
+            "select ID,Name,FinishTime,PID,PPID from %s where Deleted=0 and FinishTime between '%s' and '%s';",
             static::$table,
             $startTime,
             $endTime
@@ -112,7 +112,7 @@ class PlanItem extends Base{
         }
         // 没有 FinishTime 的数据
         $sql=sprintf(
-            "select ID,Name,PID from %s where Deleted=0 and FinishTime is null order by ID;",
+            "select ID,Name,PID,PPID from %s where Deleted=0 and FinishTime is null order by ID;",
             static::$table
         );
         $planItems=$this->pdo->getRows($sql);
