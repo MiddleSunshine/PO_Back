@@ -79,8 +79,9 @@ class PlanItem extends Base{
 
     public function CalendarData(){
         $this->post=json_decode($this->post,1);
-        $year=$this->post['Year'] ?? date("Y");
-        $month=$this->post['Month'] ?? date("M");
+        $year=empty($this->post['Year'])?date("Y"):$this->post['Year'];
+        $month=empty($this->post['Month'])?date("M"):$this->post['Month'];
+        $planIdsWhiteTable=$this->post['PlanIDs'] ?? [];
         $time=getFirstAndLastDay($year."-".$month."-01 00:00:00");
         $startTime=$time[0]." 00:00:00";
         $endTime=$time[1]." 23:59:59";
@@ -100,6 +101,9 @@ class PlanItem extends Base{
         $returnData=[];
         $planItems=$this->pdo->getRows($sql);
         foreach ($planItems as $planItem){
+            if (!empty($planIdsWhiteTable) && !in_array($planItem['PID'],$planIdsWhiteTable)){
+                continue;
+            }
             $finishTime=date("Y-m-d",strtotime($planItem['FinishTime']));
             !isset($returnData[$finishTime]) && $returnData[$finishTime]=[];
             $planItem['Plan_Name']=$plans[$planItem['PID']]['Name'] ?? "";
@@ -126,6 +130,9 @@ class PlanItem extends Base{
                 break;
             }
             $planItem=$planItems[$planItemsIndex];
+            if (!empty($planIdsWhiteTable) && !in_array($planItem['PID'],$planIdsWhiteTable)){
+                continue;
+            }
             $planItem['Plan_Name']=$plans[$planItem['PID']]['Name'] ?? "";
             $planItem['Name']=
                 ($plans[$planItem['PID']]['UpdateFinishTime'] ?? Plan::UPDATE_FINISH_TIME_SHOW)==Plan::UPDATE_FINISH_TIME_SHOW
