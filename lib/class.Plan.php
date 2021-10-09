@@ -13,7 +13,7 @@ class Plan extends Base{
 
     public function List()
     {
-        $sql=sprintf("select * from %s where Deleted=0 order by ID desc;",static::$table);
+        $sql=sprintf("select * from %s where Deleted=0 and status not in ('%s','%s') order by ID desc;",static::$table,self::STATUS_ARCHIVED,self::STATUS_GIVE_UP);
         $plans=$this->pdo->getRows($sql);
         $planItem=new PlanItem();
         foreach ($plans as &$plan){
