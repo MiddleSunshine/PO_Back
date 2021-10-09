@@ -70,6 +70,13 @@ class PlanItem extends Base{
         return $this->handleSql($this->post,$this->post['ID'],'ID');
     }
 
+    public function SaveWithoutPPID(){
+        $this->post=json_decode($this->post,1);
+        $this->post['PPID']=$this->getNextPlanItem($this->post['PID']);
+        $this->post=json_encode($this->post);
+        return $this->Save();
+    }
+
     public function getCompletion($PID){
         $sql=sprintf("select FinishTime from %s where PID=%d and Deleted=0;",static::$table,$PID);
         $planItem=$this->pdo->getRows($sql);
@@ -90,5 +97,21 @@ class PlanItem extends Base{
         return intval(
             ($count['Finished']/($count['Finished']+$count['UnFinished']))*100
         );
+    }
+
+    public function getNextPlanItem($PID){
+        $sql=sprintf(
+            "select ID,PPID from %s where PID=%d and Deleted=0;",
+            static::$table,
+            $PID
+        );
+        $planItems=$this->pdo->getRows($sql,'PPID');
+        $PPID=0;
+        while (isset($planItems[$PPID])){
+            $nextPPID=$planItems[$PPID]['ID'];
+            unset($planItems[$PPID]);
+            $PPID=$nextPPID;
+        }
+        return $PPID;
     }
 }

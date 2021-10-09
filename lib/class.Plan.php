@@ -11,6 +11,18 @@ class Plan extends Base{
     const UPDATE_FINISH_TIME_SHOW='show';
     const UPDATE_FINISH_TIME_HIDDEN='hidden';
 
+    public function GetActivePlan(){
+        $sql=sprintf(
+            "select ID,Name from %s where Deleted=0 and status in ('%s','%s') order by ID desc;",
+            static::$table,
+            self::STATUS_PROCESSING,
+            self::STATUS_SOLVED
+        );
+        return self::returnActionResult(
+            $this->pdo->getRows($sql)
+        );
+    }
+
     public function List()
     {
         $sql=sprintf("select * from %s where Deleted=0 and status not in ('%s','%s') order by ID desc;",static::$table,self::STATUS_ARCHIVED,self::STATUS_GIVE_UP);
