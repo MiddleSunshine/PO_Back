@@ -71,7 +71,7 @@ class PlanItem extends Base{
     }
 
     public function getCompletion($PID){
-        $sql=sprintf("select FinishTime as number from %s where PID=%d and Deleted=0;",static::$table,$PID);
+        $sql=sprintf("select FinishTime from %s where PID=%d and Deleted=0;",static::$table,$PID);
         $planItem=$this->pdo->getRows($sql);
         $count=[
             'Finished'=>0,
