@@ -77,6 +77,64 @@ class PlanItem extends Base{
         return $this->Save();
     }
 
+    public function CalendarData(){
+        $this->post=json_decode($this->post,1);
+        $time=getFirstAndLastDay();
+        $startTime=$this->post['StartTime'] ?? $time[0]." 00:00:00";
+        $endTime=$this->post['EndTime'] ?? $time[1]." 23:59:59";
+        // 有 FinishTime 的数据
+        $FinishTime=[];
+        $sql=sprintf(
+            "select ID,Name,FinishTime from %s where Deleted=0 and FinishTime between '%s' and '%s';",
+            static::$table,
+            $startTime,
+            $endTime
+        );
+        $returnData=[];
+        $planItems=$this->pdo->getRows($sql);
+        foreach ($planItems as $planItem){
+            $finishTime=date("Y-m-d",strtotime($planItem['FinishTime']));
+            !isset($returnData[$finishTime]) && $returnData[$finishTime]=[];
+            $returnData[$finishTime][]=$planItem;
+            $FinishTime[$finishTime]=1;
+        }
+        // 没有 FinishTime 的数据
+        $sql=sprintf(
+            "select ID,UpdateFinishTime,Name from %s where Deleted=0;",
+            Plan::$table
+        );
+        $plans=$this->pdo->getRows($sql,'ID');
+        $sql=sprintf(
+            "select ID,Name,PID from %s where Deleted=0 and FinishTime is null order by ID;",
+            static::$table
+        );
+        $planItems=$this->pdo->getRows($sql);
+        $planItemsIndex=0;
+        $startTimeStamp=time();
+        $endTimeStamp=strtotime($endTime);
+        while ($startTimeStamp<=$endTimeStamp){
+            $finishTime=date("Y-m-d",$startTimeStamp);
+            $startTimeStamp+=24*60*60;
+            if (isset($returnData[$finishTime]) && isset($FinishTime[$finishTime])){
+                continue;
+            }
+            !isset($returnData[$finishTime]) && $returnData[$finishTime]=[];
+            if (!isset($planItems[$planItemsIndex])){
+                break;
+            }
+            $planItem=$planItems[$planItemsIndex];
+            $planItem['Name']=
+                ($plans[$planItem['PID']]['UpdateFinishTime'] ?? Plan::UPDATE_FINISH_TIME_SHOW)==Plan::UPDATE_FINISH_TIME_SHOW
+                    ?$planItem['Name']
+                    :$plans[$planItem['PID']]['Name'];
+            $returnData[$finishTime][]=$planItem;
+            $planItemsIndex++;
+        }
+        return self::returnActionResult([
+            'List'=>$returnData
+        ]);
+    }
+
     public function getCompletion($PID){
         $sql=sprintf("select FinishTime from %s where PID=%d and Deleted=0;",static::$table,$PID);
         $planItem=$this->pdo->getRows($sql);

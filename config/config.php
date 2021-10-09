@@ -28,3 +28,14 @@ function __autoload($class){
 function debug($logFileName,$content){
     file_put_contents(INDEX_FILE.DIRECTORY_SEPARATOR."log".DIRECTORY_SEPARATOR.$logFileName.".log",date("Y-m-d H:i:s").PHP_EOL.$content.PHP_EOL,FILE_APPEND);
 }
+
+
+function getFirstAndLastDay()
+{
+    $firstday = date('Y-m-01');
+    $lastday = date('Y-m-d', strtotime("$firstday +1 month -1 day"));
+    return [
+        $firstday,
+        $lastday
+    ];
+}
