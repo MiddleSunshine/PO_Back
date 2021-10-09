@@ -18,7 +18,10 @@ class PlanItem extends Base{
         }
         empty($returnData) && $returnData=[[]];
         return self::returnActionResult(
-            $returnData
+            [
+                'Table'=>$returnData,
+                'Completion'=>$this->getCompletion($pid)
+            ]
         );
     }
 
