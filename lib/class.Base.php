@@ -95,6 +95,10 @@ class Base{
         return array_column($columns,'Field');
     }
 
+    public function removeDeleted($row){
+        return $row['Deleted']==0;
+    }
+
     public static function getDateRange($startTime,$endTime,$dateFormat){
         $returnData[]=date($dateFormat,strtotime($startTime));
         $startTime=strtotime($startTime);

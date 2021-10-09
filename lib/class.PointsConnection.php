@@ -3,7 +3,7 @@
 class PointsConnection extends Base{
     public static $table="Points_Connection";
     public function getSubParentId($pid){
-        $sql=sprintf("select SubPID from %s where PID=%d order by ID desc;",static::$table,$pid);
+        $sql=sprintf("select SubPID from %s where PID=%d;",static::$table,$pid);
         $dataBaseData=$this->pdo->getRows($sql);
         return array_column($dataBaseData,'SubPID');
     }
