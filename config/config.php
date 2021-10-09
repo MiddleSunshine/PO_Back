@@ -30,9 +30,9 @@ function debug($logFileName,$content){
 }
 
 
-function getFirstAndLastDay()
+function getFirstAndLastDay($date)
 {
-    $firstday = date('Y-m-01');
+    $firstday = date('Y-m-01',strtotime($date));
     $lastday = date('Y-m-d', strtotime("$firstday +1 month -1 day"));
     return [
         $firstday,

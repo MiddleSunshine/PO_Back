@@ -79,13 +79,20 @@ class PlanItem extends Base{
 
     public function CalendarData(){
         $this->post=json_decode($this->post,1);
-        $time=getFirstAndLastDay();
-        $startTime=$this->post['StartTime'] ?? $time[0]." 00:00:00";
-        $endTime=$this->post['EndTime'] ?? $time[1]." 23:59:59";
+        $year=$this->post['Year'] ?? date("Y");
+        $month=$this->post['Month'] ?? date("M");
+        $time=getFirstAndLastDay($year."-".$month."-01 00:00:00");
+        $startTime=$time[0]." 00:00:00";
+        $endTime=$time[1]." 23:59:59";
+        $sql=sprintf(
+            "select ID,UpdateFinishTime,Name from %s where Deleted=0;",
+            Plan::$table
+        );
+        $plans=$this->pdo->getRows($sql,'ID');
         // 有 FinishTime 的数据
         $FinishTime=[];
         $sql=sprintf(
-            "select ID,Name,FinishTime from %s where Deleted=0 and FinishTime between '%s' and '%s';",
+            "select ID,Name,FinishTime,PID from %s where Deleted=0 and FinishTime between '%s' and '%s';",
             static::$table,
             $startTime,
             $endTime
@@ -95,15 +102,11 @@ class PlanItem extends Base{
         foreach ($planItems as $planItem){
             $finishTime=date("Y-m-d",strtotime($planItem['FinishTime']));
             !isset($returnData[$finishTime]) && $returnData[$finishTime]=[];
+            $planItem['Plan_Name']=$plans[$planItem['PID']]['Name'] ?? "";
             $returnData[$finishTime][]=$planItem;
             $FinishTime[$finishTime]=1;
         }
         // 没有 FinishTime 的数据
-        $sql=sprintf(
-            "select ID,UpdateFinishTime,Name from %s where Deleted=0;",
-            Plan::$table
-        );
-        $plans=$this->pdo->getRows($sql,'ID');
         $sql=sprintf(
             "select ID,Name,PID from %s where Deleted=0 and FinishTime is null order by ID;",
             static::$table
@@ -123,6 +126,7 @@ class PlanItem extends Base{
                 break;
             }
             $planItem=$planItems[$planItemsIndex];
+            $planItem['Plan_Name']=$plans[$planItem['PID']]['Name'] ?? "";
             $planItem['Name']=
                 ($plans[$planItem['PID']]['UpdateFinishTime'] ?? Plan::UPDATE_FINISH_TIME_SHOW)==Plan::UPDATE_FINISH_TIME_SHOW
                     ?$planItem['Name']
