@@ -47,7 +47,7 @@ class Base{
             $value[$newKeyName]=$value[$keyName];
         }
     }
-    public function handleSql($sql,$id,$keyName){
+    public function handleSql($sql,$id,$keyName,$getNewestData=false){
         $tableField=$this->getTableField();
         if($id){
             $sqlTemplate=[];
@@ -55,7 +55,11 @@ class Base{
                 if (!in_array($filed,$tableField)){
                     continue;
                 }
-                $sqlTemplate[]=sprintf("%s='%s'",$filed,$value);
+                if ($value!==null){
+                    $sqlTemplate[]=sprintf("%s='%s'",$filed,$value);
+                }else{
+                    $sqlTemplate[]=sprintf("%s=null",$filed);
+                }
             }
             $sql=implode(",",$sqlTemplate);
             // udpate
@@ -68,7 +72,11 @@ class Base{
                     continue;
                 }
                 $fields[]=$filed;
-                $sqlTemplate.=sprintf("'%s',",$value);
+                if ($value===null){
+                    $sqlTemplate.="null,";
+                }else{
+                    $sqlTemplate.=sprintf("'%s',",$value);
+                }
             }
             $sqlTemplate=substr($sqlTemplate,0,-1);
             // insert 之前已有的值，然后就会变成 update
@@ -81,7 +89,12 @@ class Base{
             $sql=sprintf("insert into %s(%s) value(%s)",static::$table,implode(",",$fields),$sqlTemplate);
         }
         $this->pdo->query($sql);
-        $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+        if ($getNewestData){
+            $sql=sprintf("select ID from %s order by ID desc limit 1;",static::$table);
+        }else{
+            $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+        }
+
         $word=$this->pdo->getFirstRow($sql);
         return self::returnActionResult([
             'sql'=>$sql,
@@ -93,6 +106,10 @@ class Base{
         $sql="desc ".($table?:static::$table);
         $columns=$this->pdo->getRows($sql);
         return array_column($columns,'Field');
+    }
+
+    public function removeDeleted($row){
+        return $row['Deleted']==0;
     }
 
     public static function getDateRange($startTime,$endTime,$dateFormat){

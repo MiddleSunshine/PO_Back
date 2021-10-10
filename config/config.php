@@ -12,7 +12,7 @@ define("DEBUG_MODE",true);
 define("MYSQL_SET_NAMES","utf8");
 define("INDEX_FILE",dirname(__DIR__));
 define("MD_FILE_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."md".DIRECTORY_SEPARATOR);
-define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/md");
+define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 
 function __autoload($class){
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
@@ -27,4 +27,15 @@ function __autoload($class){
 
 function debug($logFileName,$content){
     file_put_contents(INDEX_FILE.DIRECTORY_SEPARATOR."log".DIRECTORY_SEPARATOR.$logFileName.".log",date("Y-m-d H:i:s").PHP_EOL.$content.PHP_EOL,FILE_APPEND);
+}
+
+
+function getFirstAndLastDay($date)
+{
+    $firstday = date('Y-m-01',strtotime($date));
+    $lastday = date('Y-m-d', strtotime("$firstday +1 month -1 day"));
+    return [
+        $firstday,
+        $lastday
+    ];
 }
