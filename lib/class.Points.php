@@ -74,13 +74,13 @@ class Points extends Base{
     }
 
     public function Save($checkPid=true){
-        $postData=json_decode($this->post,1);
-        $point=$postData['point'];
-        $forceUpdate=$postData['forceUpdate'] ?? true;
+        $this->post=json_decode($this->post,1);
+        $point=$this->post['point'];
+        $forceUpdate=$this->post['forceUpdate'] ?? true;
         if (empty($point['keyword'])){
             return self::returnActionResult([],false,"keyword不能为空");
         }
-        if ($checkPid && !isset($postData['PID'])){
+        if ($checkPid && !isset($this->post['PID'])){
             return self::returnActionResult([],false,"PID Error");
         }
         if (!empty($point['ID'])){
@@ -107,7 +107,7 @@ class Points extends Base{
         }
         $sql=sprintf("select ID,status from %s where keyword='%s'",static::$table,$point['keyword']);
         $point=$this->pdo->getFirstRow($sql);
-        $pid=$postData['PID'];
+        $pid=$this->post['PID'];
         if ($checkPid){
             $pointsConnection=new PointsConnection();
             $pointsConnection->updatePointsConnection($pid,$point['ID']);
