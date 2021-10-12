@@ -142,7 +142,7 @@ class Points extends Base{
         return self::returnActionResult([
             'Point'=>$point,
             'FileContent'=>File::getFileContent($id,$point['file']),
-            'LocalFilePath'=>File::getHostFilePath($id,$point['file'])
+            'LocalFilePath'=>File::getHostFilePath($id)
         ]);
     }
 

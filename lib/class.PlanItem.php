@@ -72,6 +72,13 @@ class PlanItem extends Base{
 
     public function SaveWithoutPPID(){
         $this->post=json_decode($this->post,1);
+        $sql=sprintf(
+            "select Full_Day_Default from %s where ID=%d",
+            Plan::$table,
+            $this->post['PID']
+        );
+        $plan=$this->pdo->getFirstRow($sql);
+        empty($this->post['Full_Day']) && $this->post['Full_Day']=$plan['Full_Day_Default'];
         empty($this->post['PPID']) && $this->post['PPID']=$this->getNextPlanItem($this->post['PID']);
         $this->post=json_encode($this->post);
         return $this->Save();
@@ -83,8 +90,8 @@ class PlanItem extends Base{
         $month=empty($this->post['Month'])?date("M"):$this->post['Month'];
         $planIdsWhiteTable=$this->post['PlanIDs'] ?? [];
         $time=getFirstAndLastDay($year."-".$month."-01 00:00:00");
-        $startTime=$time[0]." 00:00:00";
-        $endTime=$time[1]." 23:59:59";
+        $startTime=date("Y-m-d 00:00:00",strtotime($time[0]." 00:00:00 -1 month"));
+        $endTime=date("Y-m-d 23:59:59",strtotime($time[1]." 23:59:59 +1 month"));
         $sql=sprintf(
             "select ID,UpdateFinishTime,Name from %s where Deleted=0;",
             Plan::$table
@@ -93,7 +100,7 @@ class PlanItem extends Base{
         // 有 FinishTime 的数据
         $FinishTime=[];
         $sql=sprintf(
-            "select ID,Name,FinishTime,PID,PPID from %s where Deleted=0 and FinishTime between '%s' and '%s';",
+            "select ID,Name,FinishTime,PID,PPID,Full_Day from %s where Deleted=0 and FinishTime between '%s' and '%s';",
             static::$table,
             $startTime,
             $endTime
@@ -108,7 +115,7 @@ class PlanItem extends Base{
             !isset($returnData[$finishTime]) && $returnData[$finishTime]=[];
             $planItem['Plan_Name']=$plans[$planItem['PID']]['Name'] ?? "";
             $returnData[$finishTime][]=$planItem;
-            $FinishTime[$finishTime]=1;
+            $planItem['Full_Day']==Plan::FULL_DAY_DEFAULT_YES && $FinishTime[$finishTime]=1;
         }
         // 没有 FinishTime 的数据
         $sql=sprintf(

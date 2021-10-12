@@ -11,6 +11,9 @@ class Plan extends Base{
     const UPDATE_FINISH_TIME_SHOW='show';
     const UPDATE_FINISH_TIME_HIDDEN='hidden';
 
+    const FULL_DAY_DEFAULT_YES='Yes';
+    const FULL_DAY_DEFAULT_NO='No';
+
     public function GetActivePlan(){
         $sql=sprintf(
             "select ID,Name from %s where Deleted=0 and status in ('%s','%s') order by ID desc;",
