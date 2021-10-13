@@ -3,6 +3,33 @@
 class ClockIn extends Base{
     public static $table="clock_in";
 
+    public function List(){
+        $sql=sprintf(
+            "select * from %s where Year='%s' and Month='%s';",
+            self::$table,
+            date("Y"),
+            date("m")
+        );
+        $records=$this->pdo->getRows($sql);
+        $amount=0;
+        foreach ($records as &$record){
+            if (!empty($record['working_hours']) && !empty($record['off_work_time'])){
+                $record['Result']=round(
+                    ((strtotime($record['off_work_time'])-strtotime($record['working_hours']))-9*60*60)/60,
+                    1);
+            }else{
+                $record['Result']=0;
+            }
+            $amount+=$record['Result'];
+        }
+        return self::returnActionResult(
+            [
+                'List'=>$records,
+                'Amount'=>$amount
+            ]
+        );
+    }
+
     public function StartWork(){
         $data=[
             'Year'=>date("Y"),
