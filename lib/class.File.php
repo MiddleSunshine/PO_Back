@@ -29,7 +29,7 @@ class File extends Base{
         return '';
     }
 
-    public static function getHostFilePath($pid,$fileName){
-        return LocalFilePath.DIRECTORY_SEPARATOR.$pid.DIRECTORY_SEPARATOR.$fileName.".md";
+    public static function getHostFilePath($pid){
+        return LocalFilePath.DIRECTORY_SEPARATOR.$pid.DIRECTORY_SEPARATOR;
     }
 }
