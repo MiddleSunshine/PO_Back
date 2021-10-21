@@ -80,10 +80,12 @@ class Base{
             }
             $sqlTemplate=substr($sqlTemplate,0,-1);
             // insert 之前已有的值，然后就会变成 update
-            $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,$this->post[$keyName]);
-            $data=$this->pdo->getFirstRow($sqlSearch);
-            if (!empty($data)){
-                return $this->handleSql($sql,$data['ID'],$keyName);
+            if (!empty($keyName)){
+                $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,$this->post[$keyName]);
+                $data=$this->pdo->getFirstRow($sqlSearch);
+                if (!empty($data)){
+                    return $this->handleSql($sql,$data['ID'],$keyName);
+                }
             }
             // insert
             $sql=sprintf("insert into %s(%s) value(%s)",static::$table,implode(",",$fields),$sqlTemplate);

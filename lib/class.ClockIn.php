@@ -21,11 +21,16 @@ class ClockIn extends Base{
                 $record['Result']=0;
             }
             $amount+=$record['Result'];
+            $record['Result']=str_pad(
+                $record['Result'],
+                10,
+                ' '
+            );
         }
         return self::returnActionResult(
             [
                 'List'=>$records,
-                'Amount'=>$amount
+                'Amount'=>round($amount,2)
             ]
         );
     }
