@@ -1,56 +1,43 @@
 <?php
 
-class GTDList{
-    public $start;
-    public $end;
-    public function __construct($start,$end=[])
-    {
-        $this->start=$start;
-        $this->end=$end;
-    }
-}
-
 class GTD extends Base{
     const OFFSET_STEP=1;
     public static $table="GTD";
     public function List(){
         $this->post=json_decode($this->post,1);
-        $where=[];
-        if (!empty($this->post['CategoryID'])){
-            $where[]=sprintf("CategoryID in (%s)",$this->post['CategoryID']);
-        }
-        $sql=sprintf("
-            select * from %s 
-        ",static::$table);
-        if (!empty($where)){
-            $sql.=" where ".implode("and ",$where);
-        }
-        $GTDS=$this->pdo->getRows($sql,'CID');
-        $isShowAll=$this->post['ShowAll'] ?? false;
-        // 如果并不展示全部数据，那么就要过滤掉一些数据
-        if (!$isShowAll){
-            $CID=0;
-            $endlessPrevent=0;
-            while (isset($GTDS[$CID]) && $endlessPrevent<100000){
-                $endlessPrevent++;
-                // 本次考虑的 $GTD
-                $thisTurnGTD=$GTDS[$CID];
-                // 其下一个的GTD
-                $sonGTD=$GTDS[$thisTurnGTD['CID']] ?? ['offset'=>-1];
-                if (!empty($thisTurnGTD['FinishTime'])){
-                    if($thisTurnGTD['offset']>=$sonGTD['offset']){
-                        unset($GTDS[$CID]);
-                    }else{
-                        if (!empty($sonGTD['FinishTime'])){
-                            unset($GTDS[$CID]);
-                        }
-                    }
-                }
-                $CID=$sonGTD['ID'];
+        $GTDCategory=new GTDCategory();
+        $UsefulCategories=$GTDCategory->getProcessingCategory(
+            $this->post['ShowAllCategories'] ?? true
+        );
+        $returnData=[];
+        $showAllGTDS=$this->post['ShowAllGTD'] ?? false;
+        $now=time();
+        $filterCategory=$this->post['CategoryID'] ?? [];
+        foreach ($UsefulCategories as $category){
+            if (!empty($filterCategory) && !in_array($category['ID'],$filterCategory)){
+                continue;
             }
+            $sql=sprintf("select * from %s where CategoryID=%d;",static::$table,$category['ID']);
+            $GTDS=$this->pdo->getRows($sql,'CID');
+            $list=[];
+            $CID=0;
+            while (isset($GTDS[$CID])){
+                if (!$showAllGTDS && !empty($GTDS['StartTime'])){
+                    if (strtotime($GTDS['StartTime'])>$now){
+                        $list[]=$GTDS[$CID];
+                    }
+                }else{
+                    $list[]=$GTDS[$CID];
+                }
+                $CID=$GTDS[$CID]['ID'];
+            }
+            $category['GTDS']=array_reverse($list);
+            $returnData[]=$category;
         }
+
         return self::returnActionResult([
-            'List'=>$GTDS
+            'List'=>$returnData,
+            'Categories'=>$UsefulCategories
         ]);
     }
 
@@ -114,13 +101,12 @@ class GTD extends Base{
             $debug[]=5;
         }
         // 更新 offset
-        if ($option!='Same'){
-            $this->updateOffset(
-                $PID,
-                $GTDList2->start['ID'],
-                $GTDList2->end['ID']
-            );
-        }
+        $this->updateOffset(
+            $PID,
+            $GTDList2->start['ID'],
+            $GTDList2->end['ID'],
+            $option=='Sub'
+        );
         return self::returnActionResult(
             [
                 'debug'=>$debug,
@@ -182,7 +168,7 @@ class GTD extends Base{
                 if ($nextGTD['offset']>$limitOffset){
                     return $this->getFinalGTD($nextGTD['ID'],$limitOffset);
                 }else{
-                    return $nextGTD['ID'];
+                    return $GTD['ID'];
                 }
             }
         }else{
@@ -190,12 +176,16 @@ class GTD extends Base{
         }
     }
 
-    public function updateOffset($ID,$startId,$endId){
+    public function updateOffset($ID,$startId,$endId,$sub=true){
         $GTD=$this->getGTD($ID);
-        // ID=0 的情况
         !isset($GTD['offset']) && $GTD['offset']=0-self::OFFSET_STEP;
+        if ($sub){
+            $baseOffset=$GTD['offset']+self::OFFSET_STEP;
+        }else{
+            $baseOffset=$GTD['offset'];
+        }
         if (empty($endId)){
-            $this->saveOffset($startId,$GTD['offset']+self::OFFSET_STEP);
+            $this->saveOffset($startId,$baseOffset);
         }else{
             $endlessPrevent=1000;
             $nextID=$startId;
@@ -206,8 +196,12 @@ class GTD extends Base{
                 if (empty($subGTD)){
                     break;
                 }
-                $this->saveOffset($nextID,$subGTD['offset']-$firstGTD['offset']+$GTD['offset']+self::OFFSET_STEP);
+                $this->saveOffset($nextID,$subGTD['offset']-$firstGTD['offset']+$baseOffset);
+                $nextID=$subGTD['CID'];
             }
+            // update $endId
+            $endGTD=$this->getGTD($endId);
+            $this->saveOffset($endId,$endGTD['offset']-$firstGTD['offset']+$baseOffset);
         }
     }
 
@@ -236,5 +230,15 @@ class GTD extends Base{
     public function getGTD($ID,$IDType='ID',$field='ID,CID,offset'){
         $sql=sprintf("select %s from %s where %s=%d;",$field,static::$table,$IDType,$ID);
         return $this->pdo->getFirstRow($sql);
+    }
+}
+
+class GTDList{
+    public $start;
+    public $end;
+    public function __construct($start,$end=[])
+    {
+        $this->start=$start;
+        $this->end=$end;
     }
 }
