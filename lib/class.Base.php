@@ -91,6 +91,14 @@ class Base{
             $sql=sprintf("insert into %s(%s) value(%s)",static::$table,implode(",",$fields),$sqlTemplate);
         }
         $this->pdo->query($sql);
+        if ($id){
+            return self::returnActionResult(
+                [
+                    'sql'=>$sql,
+                    'ID'=>$id
+                ]
+            );
+        }
         if ($getNewestData){
             $sql=sprintf("select ID from %s order by ID desc limit 1;",static::$table);
         }else{

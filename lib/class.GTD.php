@@ -2,7 +2,12 @@
 
 class GTD extends Base{
     const OFFSET_STEP=1;
+
+    const OPTION_SUB='Sub';
+    const OPTION_SAME='Same';
+
     public static $table="GTD";
+
     public function List(){
         $this->post=json_decode($this->post,1);
         $GTDCategory=new GTDCategory();
@@ -22,7 +27,7 @@ class GTD extends Base{
             $list=[];
             $CID=0;
             while (isset($GTDS[$CID])){
-                if (!$showAllGTDS && !empty($GTDS['StartTime'])){
+                if (!$showAllGTDS && !empty($GTDS['StartTime']) && !empty($GTDS['FinishTime'])){
                     if (strtotime($GTDS['StartTime'])>$now){
                         $list[]=$GTDS[$CID];
                     }
@@ -38,6 +43,61 @@ class GTD extends Base{
         return self::returnActionResult([
             'List'=>$returnData,
             'Categories'=>$UsefulCategories
+        ]);
+    }
+
+    public function Update(){
+        $this->post=json_decode($this->post,1);
+        if (!isset($this->post['ID'])){
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "缺少参数"
+            );
+        }
+        foreach (['FinishTime','StartTime','EndTime'] as $checkField){
+            if (isset($this->post[$checkField])){
+                empty($this->post[$checkField]) && $this->post[$checkField]=null;
+            }
+        }
+        $this->handleSql($this->post,$this->post['ID'],'');
+        return self::returnActionResult();
+    }
+
+    public function UpdateFinishTime(){
+        $ID=$this->get['ID'] ?? -1;
+        if ($ID<=0){
+            return self::returnActionResult($this->get,false,"参数错误");
+        }
+        $GTD=$this->getGTD($ID,'ID','*');
+        if (!empty($GTD['FinishTime'])){
+            $sql=sprintf("update %s set FinishTime=null where ID=%d;",static::$table,$ID);
+        }else{
+            $sql=sprintf("update %s set FinishTime='%s' where ID=%d;",static::$table,date("Y-m-d H:i:s"),$ID);
+        }
+        $this->pdo->query($sql);
+        return self::returnActionResult(
+            [
+                'sql'=>$sql
+            ]
+        );
+    }
+
+    public function RecordOffset(){
+        $this->post=json_decode($this->post,1);
+        $ID=$this->post['ID'] ?? -1;
+        $option=$this->post['Option'] ?? "";
+        if ($ID<0 || empty($option)){
+            return self::returnActionResult($this->post,false,"参数错误");
+        }
+        $parentGTD=$this->getGTD($ID,'CID');
+        $GTD=$this->getGTD($ID);
+        $endGTD=$this->getFinalGTD($ID,$GTD['offset']);
+        $this->updateOffset($parentGTD['ID'] ?? 0,$ID,$endGTD,$option==self::OPTION_SUB,$option==self::OPTION_SAME?-1:0);
+        return self::returnActionResult([
+            'ParentGTD'=>$parentGTD,
+            'GTD'=>$GTD,
+            'EndGTD'=>$endGTD
         ]);
     }
 
@@ -105,7 +165,7 @@ class GTD extends Base{
             $PID,
             $GTDList2->start['ID'],
             $GTDList2->end['ID'],
-            $option=='Sub'
+            $option==self::OPTION_SUB
         );
         return self::returnActionResult(
             [
@@ -127,8 +187,9 @@ class GTD extends Base{
     }
 
     public function CreateNewGTD(){
-        $PID=$this->get['PID'] ?? -1;
-        $CategoryID=$this->get['CategoryID'] ?? -1;
+        $this->post=json_decode($this->post,1);
+        $PID=$this->post['PID'] ?? -1;
+        $CategoryID=$this->post['CategoryID'] ?? -1;
         if ($PID<0 || $CategoryID<0){
             return self::returnActionResult($this->get,false,"参数错误！");
         }
@@ -176,13 +237,16 @@ class GTD extends Base{
         }
     }
 
-    public function updateOffset($ID,$startId,$endId,$sub=true){
+    public function updateOffset($ID,$startId,$endId,$sub=true,$baseOffset=0){
         $GTD=$this->getGTD($ID);
         !isset($GTD['offset']) && $GTD['offset']=0-self::OFFSET_STEP;
         if ($sub){
-            $baseOffset=$GTD['offset']+self::OFFSET_STEP;
+            $baseOffset=$GTD['offset']+self::OFFSET_STEP+$baseOffset;
         }else{
             $baseOffset=$GTD['offset'];
+        }
+        if ($baseOffset<0){
+            $baseOffset=0;
         }
         if (empty($endId)){
             $this->saveOffset($startId,$baseOffset);

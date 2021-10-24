@@ -21,4 +21,27 @@ class GTDCategory extends Base{
         }
         return $Categories;
     }
+
+    public function NewCategory(){
+        $this->post=json_decode($this->post,1);
+        if (empty($this->post['Category'])){
+            return self::returnActionResult($this->post,false,"缺少参数");
+        }
+        $this->post['Status']=self::START_PROCESSING;
+        $this->handleSql($this->post,0,'');
+        return self::returnActionResult();
+    }
+
+    public function UpdateCategory(){
+        $this->post=json_decode($this->post,1);
+        if (empty($this->post['ID'])){
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "参数错误"
+            );
+        }
+        $this->handleSql($this->post,$this->post['ID'],'');
+        return self::returnActionResult();
+    }
 }
