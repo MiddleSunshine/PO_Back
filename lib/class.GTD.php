@@ -16,8 +16,12 @@ class GTD extends Base{
         );
         $returnData=[];
         $showAllGTDS=$this->post['ShowAllGTD'] ?? false;
+        $showFinishTimeGTD=$this->post['ShowFinishTimeGTD'] ?? false;
         $now=time();
         $filterCategory=$this->post['CategoryID'] ?? [];
+        $GTDLabels=new GTDLabel();
+        $usefulLabels=$GTDLabels->getUsefulLabel();
+        $GTDLabelConnection=new GTDLabelConnection();
         foreach ($UsefulCategories as $category){
             if (!empty($filterCategory) && !in_array($category['ID'],$filterCategory)){
                 continue;
@@ -27,15 +31,19 @@ class GTD extends Base{
             $list=[];
             $CID=0;
             while (isset($GTDS[$CID])){
-                if (!$showAllGTDS){
-                    if (empty($GTDS[$CID]['FinishTime'])){
-                        if (!empty($GTDS[$CID]['StartTime'])){
-                            if (strtotime($GTDS[$CID]['StartTime'])<=$now){
+                if (!$showFinishTimeGTD){
+                    if (!$showAllGTDS){
+                        if (empty($GTDS[$CID]['FinishTime'])){
+                            if (!empty($GTDS[$CID]['StartTime'])){
+                                if (strtotime($GTDS[$CID]['StartTime'])<=$now){
+                                    $list[]=$GTDS[$CID];
+                                }
+                            }else{
                                 $list[]=$GTDS[$CID];
                             }
-                        }else{
-                            $list[]=$GTDS[$CID];
                         }
+                    }else{
+                        $list[]=$GTDS[$CID];
                     }
                 }else{
                     $list[]=$GTDS[$CID];
@@ -43,6 +51,15 @@ class GTD extends Base{
                 $CID=$GTDS[$CID]['ID'];
             }
             $category['GTDS']=array_reverse($list);
+            foreach ($category['GTDS'] as &$GTD){
+                $connections=$GTDLabelConnection->getLabels($GTD['ID'],0,'Label_ID');
+                foreach ($connections as $lableId=>&$connection){
+                    if (isset($usefulLabels[$lableId])){
+                        $connection['Label']=$usefulLabels[$lableId];
+                    }
+                }
+                $GTD['Labels']=array_values($connections);
+            }
             $returnData[]=$category;
         }
 
@@ -66,7 +83,7 @@ class GTD extends Base{
                 empty($this->post[$checkField]) && $this->post[$checkField]=null;
             }
         }
-        $this->handleSql($this->post,$this->post['ID'],'');
+        $this->handleSql($this->post,$this->post['ID']);
         return self::returnActionResult();
     }
 

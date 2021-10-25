@@ -61,6 +61,25 @@ class GTDLabelConnection extends Base{
         );
     }
 
+    public function DeleteConnection(){
+        $GTD_ID=$this->get['GTD_ID'] ?? 0;
+        $Label_ID=$this->get['Label_ID'] ?? 0;
+        if (empty($GTD_ID) || empty($Label_ID)){
+            return self::returnActionResult(
+                $this->get,
+                false,
+                "参数错误"
+            );
+        }
+        $sql=sprintf("delete from %s where GTD_ID=%d and Label_ID=%d",static::$table,$GTD_ID,$Label_ID);
+        $this->pdo->query($sql);
+        return self::returnActionResult(
+            [
+                'sql'=>$sql
+            ]
+        );
+    }
+
     public function getLabels($GTD_ID=0,$Label_ID=0,$keyName=''){
         if (empty($GTD_ID) && empty($Label_ID)){
             return false;

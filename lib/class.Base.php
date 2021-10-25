@@ -102,7 +102,9 @@ class Base{
         if ($getNewestData){
             $sql=sprintf("select ID from %s order by ID desc limit 1;",static::$table);
         }else{
-            $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+            if (!empty($keyName)){
+                $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+            }
         }
 
         $word=$this->pdo->getFirstRow($sql);
