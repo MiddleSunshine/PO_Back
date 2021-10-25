@@ -47,7 +47,7 @@ class Base{
             $value[$newKeyName]=$value[$keyName];
         }
     }
-    public function handleSql($sql,$id,$keyName,$getNewestData=false){
+    public function handleSql($sql,$id,$keyName='',$getNewestData=false){
         $tableField=$this->getTableField();
         if($id){
             $sqlTemplate=[];

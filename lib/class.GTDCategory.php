@@ -28,7 +28,7 @@ class GTDCategory extends Base{
             return self::returnActionResult($this->post,false,"缺少参数");
         }
         $this->post['Status']=self::START_PROCESSING;
-        $this->handleSql($this->post,0,'');
+        $this->handleSql($this->post,0);
         return self::returnActionResult();
     }
 

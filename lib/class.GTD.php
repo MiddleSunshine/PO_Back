@@ -27,9 +27,15 @@ class GTD extends Base{
             $list=[];
             $CID=0;
             while (isset($GTDS[$CID])){
-                if (!$showAllGTDS && !empty($GTDS['StartTime']) && !empty($GTDS['FinishTime'])){
-                    if (strtotime($GTDS['StartTime'])>$now){
-                        $list[]=$GTDS[$CID];
+                if (!$showAllGTDS){
+                    if (empty($GTDS[$CID]['FinishTime'])){
+                        if (!empty($GTDS[$CID]['StartTime'])){
+                            if (strtotime($GTDS[$CID]['StartTime'])<=$now){
+                                $list[]=$GTDS[$CID];
+                            }
+                        }else{
+                            $list[]=$GTDS[$CID];
+                        }
                     }
                 }else{
                     $list[]=$GTDS[$CID];
@@ -237,16 +243,13 @@ class GTD extends Base{
         }
     }
 
-    public function updateOffset($ID,$startId,$endId,$sub=true,$baseOffset=0){
+    public function updateOffset($ID,$startId,$endId,$sub=true,$extraOffset=0){
         $GTD=$this->getGTD($ID);
         !isset($GTD['offset']) && $GTD['offset']=0-self::OFFSET_STEP;
         if ($sub){
-            $baseOffset=$GTD['offset']+self::OFFSET_STEP+$baseOffset;
+            $baseOffset=$GTD['offset']+self::OFFSET_STEP+$extraOffset;
         }else{
             $baseOffset=$GTD['offset'];
-        }
-        if ($baseOffset<0){
-            $baseOffset=0;
         }
         if (empty($endId)){
             $this->saveOffset($startId,$baseOffset);
