@@ -36,6 +36,8 @@ class GTDLabelConnection extends Base{
             if (!isset($labels[$labelID])){
                 // insert 部分
                 $insert[]=$labelID;
+            }else{
+                // 相同的数据，不需要更新
                 unset($labels[$index]);
             }
         }
