@@ -116,7 +116,7 @@ class GTD extends Base{
         $parentGTD=$this->getGTD($ID,'CID');
         $GTD=$this->getGTD($ID);
         $endGTD=$this->getFinalGTD($ID,$GTD['offset']);
-        $this->updateOffset($parentGTD['ID'] ?? 0,$ID,$endGTD,$option==self::OPTION_SUB,$option==self::OPTION_SAME?-1:0);
+        $this->updateOffset($parentGTD['ID'] ?? 0,$ID,$endGTD,$option==self::OPTION_SUB,$option==self::OPTION_SAME?(0-self::OFFSET_STEP):0);
         return self::returnActionResult([
             'ParentGTD'=>$parentGTD,
             'GTD'=>$GTD,
@@ -244,6 +244,34 @@ class GTD extends Base{
         );
     }
 
+    public function GetGTDHistory(){
+        $timeRange=$this->get['Days'] ?? date("w");
+        $timeRange==0 && $timeRange=7;
+        $FinishGTDS=[];
+        $sql=sprintf("select * from %s",GTDCategory::$table);
+        $Categories=$this->pdo->getRows($sql,'ID');
+        for ($day=0;$day<$timeRange;$day++){
+            $date=date("Y-m-d",strtotime("-{$day} day"));
+            $sql=sprintf("select * from %s where FinishTime between '%s 00:00:00' and '%s 23:59:59' order by FinishTime desc;",
+                static::$table,$date,$date
+            );
+            // todo 增加 Category 的信息
+            $GTDs=$this->pdo->getRows($sql);
+            $FinishGTDS[$day]=[];
+            $FinishGTDS[$day]=[
+                'Date'=>substr($date,5),
+                'GTDs'=>$GTDs
+            ];
+        }
+        $FinishGTDS[0]['Date']="Today";
+        isset($FinishGTDS[1]) && $FinishGTDS[1]['Date']='Yesterday';
+        return self::returnActionResult(
+            [
+                'List'=>array_values($FinishGTDS)
+            ]
+        );
+    }
+
     public function getFinalGTD($ID,$limitOffset){
         $GTD=$this->getGTD($ID);
         if (!empty($GTD['CID'])){
@@ -266,7 +294,7 @@ class GTD extends Base{
         if ($sub){
             $baseOffset=$GTD['offset']+self::OFFSET_STEP+$extraOffset;
         }else{
-            $baseOffset=$GTD['offset'];
+            $baseOffset=$GTD['offset']+$extraOffset;
         }
         if (empty($endId)){
             $this->saveOffset($startId,$baseOffset);

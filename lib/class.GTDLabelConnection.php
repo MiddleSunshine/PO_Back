@@ -30,7 +30,7 @@ class GTDLabelConnection extends Base{
                 "参数错误"
             );
         }
-        $labels=$this->getLabels($GTDID,0,'ID');
+        $labels=$this->getLabels($GTDID,0,'Label_ID');
         $insert=[];
         foreach ($LabelIDs as $index=>$labelID){
             if (!isset($labels[$labelID])){

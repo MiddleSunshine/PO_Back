@@ -104,10 +104,13 @@ class Base{
         }else{
             if (!empty($keyName)){
                 $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+            }else{
+                $sql=null;
             }
         }
-
-        $word=$this->pdo->getFirstRow($sql);
+        if (!empty($sql)){
+            $word=$this->pdo->getFirstRow($sql);
+        }
         return self::returnActionResult([
             'sql'=>$sql,
             'ID'=>$word['ID'] ?? 0
