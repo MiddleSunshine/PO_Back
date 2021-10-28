@@ -22,6 +22,7 @@ class GTD extends Base{
         $GTDLabels=new GTDLabel();
         $usefulLabels=$GTDLabels->getUsefulLabel();
         $GTDLabelConnection=new GTDLabelConnection();
+        $oneDay=24*60*60;
         foreach ($UsefulCategories as $category){
             if (!empty($filterCategory) && !in_array($category['ID'],$filterCategory)){
                 continue;
@@ -31,6 +32,18 @@ class GTD extends Base{
             $list=[];
             $CID=0;
             while (isset($GTDS[$CID])){
+                if (!empty($GTDS[$CID]['EndTime'])){
+                    $endTimeStamp=strtotime($GTDS[$CID]['EndTime']);
+                    $GTDS[$CID]['EndTime']=date("m-d",$endTimeStamp);
+                    if ($endTimeStamp>$now){
+                        if (($endTimeStamp-$now)>=$oneDay && ($endTimeStamp-$now)<=(2*$oneDay)){
+                            $GTDS[$CID]['EndTime']='Tomorrow';
+                        }
+                        if (($endTimeStamp-$now)<=$oneDay){
+                            $GTDS[$CID]['EndTime']='Today';
+                        }
+                    }
+                }
                 if (!$showFinishTimeGTD){
                     if (!$showAllGTDS){
                         if (empty($GTDS[$CID]['FinishTime'])){
@@ -122,6 +135,49 @@ class GTD extends Base{
             'GTD'=>$GTD,
             'EndGTD'=>$endGTD
         ]);
+    }
+
+    public function UpdateOffsetForce(){
+        $ID=$this->get['ID'] ?? -1;
+        $option=$this->get['Option'] ?? '';
+        if ($ID<0 || empty($option)){
+            return self::returnActionResult($this->get,false,"参数错误");
+        }
+        $startGTD=$this->getGTD($ID);
+        if (empty($startGTD)){
+            return self::returnActionResult($this->get,false,"无效数据");
+        }
+        $endGTDID=$this->getFinalGTD($ID,$startGTD['offset']);
+        $endGTD=$this->getGTD($endGTDID);
+        $offsetOption=0;
+        switch ($option){
+            case self::OPTION_SAME:
+                $offsetOption=0-self::OFFSET_STEP;
+                break;
+            case self::OPTION_SUB:
+                $offsetOption=self::OFFSET_STEP;
+                break;
+        }
+        if ($offsetOption==0){
+            return self::returnActionResult($this->get,false,"错误数据");
+        }
+        if (empty($endGTD)){
+            $offsetOption<0 && $offsetOption=0;
+            $this->saveOffset($ID,$offsetOption);
+        }else{
+            $nextID=$ID;
+            while ($nextID!=$endGTD['ID']){
+                $nextGTD=$this->getGTD($nextID);
+                $offset=$offsetOption+$nextGTD['offset'];
+                $offset<0 && $offset=0;
+                $this->saveOffset($nextID,$offset);
+                $nextID=$nextGTD['CID'];
+            }
+            $offset=$offsetOption+$endGTD['offset'];
+            $offset<0 && $offset=0;
+            $this->saveOffset($endGTD['ID'],$offset);
+        }
+        return self::returnActionResult();
     }
 
     public function UpdateCID(){

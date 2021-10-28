@@ -32,13 +32,13 @@ class GTDLabelConnection extends Base{
         }
         $labels=$this->getLabels($GTDID,0,'Label_ID');
         $insert=[];
-        foreach ($LabelIDs as $index=>$labelID){
+        foreach ($LabelIDs as $labelID){
             if (!isset($labels[$labelID])){
                 // insert 部分
                 $insert[]=$labelID;
             }else{
                 // 相同的数据，不需要更新
-                unset($labels[$index]);
+                unset($labels[$labelID]);
             }
         }
         $deleted=array_keys($labels);
