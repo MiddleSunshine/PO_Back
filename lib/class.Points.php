@@ -5,10 +5,14 @@ class Points extends Base{
 
     public static $table="Points";
 
+    const STATUS_INIT='init';
     const STATUS_NEW='new';
     const STATUS_SOLVED='solved';
     const STATUS_GIVE_UP='give_up';
     const STATUS_ARCHIVED='archived';
+
+    const SEARCHABLE_YES='Yes';
+    const SEARCHABLE_NO='No';
 
     public static $statusMap=[
         self::STATUS_NEW=>0,
@@ -20,7 +24,7 @@ class Points extends Base{
     public function Index(){
         $pid=$this->get["id"] ?? 0;
         $this->post=json_decode($this->post,1);
-        $status=$this->post["status"] ?? sprintf("%s,%s",self::STATUS_NEW,self::STATUS_SOLVED);
+        $status=empty($this->post["status"]) ? sprintf("%s,%s,%s",self::STATUS_NEW,self::STATUS_SOLVED,self::STATUS_INIT):$this->post["status"];
         $searchStatus=[];
         foreach (explode(",",$status) as $str){
             $searchStatus[]=sprintf("'%s'",$str);
@@ -71,6 +75,34 @@ class Points extends Base{
         return self::returnActionResult(
             $this->pdo->getRows($sql)
         );
+    }
+
+//    public function SearchPointList(){
+//        $sql=sprintf(
+//            "select ID,keyword from %s where Deleted=0 and SearchAble='%s';",
+//            static::$table,
+//            self::SEARCHABLE_YES
+//        );
+//        return self::returnActionResult([
+//            'Points'=>$this->pdo->getRows($sql)
+//        ]);
+//    }
+
+    public function UpdatePoint(){
+        $this->post=json_decode($this->post,1);
+        if (empty($this->post['keyword'])){
+            return self::returnActionResult($this->post,false,"keyword不能为空");
+        }
+        if (empty($this->post['ID'])){
+            return self::returnActionResult($this->post,false,"数据错误");
+        }
+        $sql=sprintf("select * from %s where keyword='%s' and ID!=%d;",static::$table,$this->post['keyword'],$this->post['ID']);
+        $point=$this->pdo->getFirstRow($sql);
+        if ($point['ID']){
+            return self::returnActionResult(['point'=>$point],false,"Point已经存在");
+        }
+        $this->handleSql($this->post,$this->post['ID']);
+        return self::returnActionResult($this->post);
     }
 
     public function Save($checkPid=true){
