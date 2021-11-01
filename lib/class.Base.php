@@ -47,7 +47,7 @@ class Base{
             $value[$newKeyName]=$value[$keyName];
         }
     }
-    public function handleSql($sql,$id,$keyName,$getNewestData=false){
+    public function handleSql($sql,$id,$keyName='',$getNewestData=false){
         $tableField=$this->getTableField();
         if($id){
             $sqlTemplate=[];
@@ -80,22 +80,37 @@ class Base{
             }
             $sqlTemplate=substr($sqlTemplate,0,-1);
             // insert 之前已有的值，然后就会变成 update
-            $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,$this->post[$keyName]);
-            $data=$this->pdo->getFirstRow($sqlSearch);
-            if (!empty($data)){
-                return $this->handleSql($sql,$data['ID'],$keyName);
+            if (!empty($keyName)){
+                $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,$this->post[$keyName]);
+                $data=$this->pdo->getFirstRow($sqlSearch);
+                if (!empty($data)){
+                    return $this->handleSql($sql,$data['ID'],$keyName);
+                }
             }
             // insert
             $sql=sprintf("insert into %s(%s) value(%s)",static::$table,implode(",",$fields),$sqlTemplate);
         }
         $this->pdo->query($sql);
+        if ($id){
+            return self::returnActionResult(
+                [
+                    'sql'=>$sql,
+                    'ID'=>$id
+                ]
+            );
+        }
         if ($getNewestData){
             $sql=sprintf("select ID from %s order by ID desc limit 1;",static::$table);
         }else{
-            $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+            if (!empty($keyName)){
+                $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+            }else{
+                $sql=null;
+            }
         }
-
-        $word=$this->pdo->getFirstRow($sql);
+        if (!empty($sql)){
+            $word=$this->pdo->getFirstRow($sql);
+        }
         return self::returnActionResult([
             'sql'=>$sql,
             'ID'=>$word['ID'] ?? 0
