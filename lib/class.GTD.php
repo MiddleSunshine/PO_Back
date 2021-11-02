@@ -265,6 +265,72 @@ class GTD extends Base{
         );
     }
 
+    public function UpdateCategory(){
+        $this->post=json_decode($this->post,true);
+        $ID=$this->post['ID'] ?? -1;
+        $PID=$this->post['PID'] ?? -1;
+        $option=$this->post['Option'] ?? '';
+        $categoryID=$this->post['CategoryID'] ?? -1;
+        if ($ID<0 || $PID<0 || empty($option) || $categoryID<0){
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "参数错误"
+            );
+        }
+        // Step 1:Move this part to the end
+        $startGTD=$this->getGTD($ID);
+        if (empty($startGTD)){
+            return self::returnActionResult($this->post,false,"Wrong Data");
+        }
+        $endGTD=$this->getGTDEnd($startGTD['CategoryID']);
+        if ($ID!=$endGTD['ID']){
+            $this->post=json_encode(
+                [
+                    'ID'=>$ID,
+                    'PID'=>$endGTD['ID'],
+                    'CategoryID'=>$startGTD['CategoryID'],
+                    'Option'=>self::OPTION_SAME
+                ]
+            );
+            $stepResult=$this->UpdateCID();
+            if (!$stepResult['Status']){
+                return $stepResult;
+            }
+        }
+        // Step 2:Update Category
+        $nextID=$ID;
+        $endID=$this->getFinalGTD($ID,$startGTD['offset']);
+        !$endID && $endID=$ID;
+        $ids=[];
+        while ($endID!=$nextID){
+            $nextGTD=$this->getGTD($nextID);
+            if (!empty($nextGTD)){
+                $ids[]=$nextID;
+                $nextID=$nextGTD['CID'];
+            }else{
+                break;
+            }
+        }
+        $ids[]=$endID;
+        $sql=sprintf("update %s set CategoryID=%d where ID in (%s);",static::$table,$categoryID,implode(",",$ids));
+        $this->pdo->query($sql);
+        // Step 3:move this part to new Category List end
+        $endGTD=$this->getGTDEnd($categoryID);
+        if (!empty($endGTD)){
+            $sql=sprintf("update %s set CID=%d where ID=%d;",static::$table,$ID,$endGTD['ID']);
+            $this->pdo->query($sql);
+        }
+        // Step 4:move to the PID
+        $this->post=json_encode([
+            'ID'=>$ID,
+            'PID'=>$PID,
+            'CategoryID'=>$categoryID,
+            'Option'=>$option
+        ]);
+        return $this->UpdateCID();
+    }
+
     public function CreateNewGTD(){
         $this->post=json_decode($this->post,1);
         $PID=$this->post['PID'] ?? -1;
