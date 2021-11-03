@@ -236,8 +236,10 @@ class GTD extends Base{
                 $this->saveCID($ID,$a['CID']);
             }
         }else{
-            $this->saveCID($ID,$GTDList1->start['ID']);
-            $debug[]=5;
+            if ($ID!=$GTDList1->start['ID']){
+                $this->saveCID($ID,$GTDList1->start['ID']);
+                $debug[]=5;
+            }
         }
         // 更新 offset
         $this->updateOffset(
@@ -279,24 +281,22 @@ class GTD extends Base{
             );
         }
         // Step 1:Move this part to the end
-        $startGTD=$this->getGTD($ID);
+        $startGTD=$this->getGTD($ID,'ID','*');
         if (empty($startGTD)){
             return self::returnActionResult($this->post,false,"Wrong Data");
         }
         $endGTD=$this->getGTDEnd($startGTD['CategoryID']);
-        if ($ID!=$endGTD['ID']){
-            $this->post=json_encode(
-                [
-                    'ID'=>$ID,
-                    'PID'=>$endGTD['ID'],
-                    'CategoryID'=>$startGTD['CategoryID'],
-                    'Option'=>self::OPTION_SAME
-                ]
-            );
-            $stepResult=$this->UpdateCID();
-            if (!$stepResult['Status']){
-                return $stepResult;
-            }
+        $this->post=json_encode(
+            [
+                'ID'=>$ID,
+                'PID'=>0,
+                'CategoryID'=>$startGTD['CategoryID'],
+                'Option'=>self::OPTION_SAME
+            ]
+        );
+        $stepResult=$this->UpdateCID();
+        if (!$stepResult['Status']){
+            return $stepResult;
         }
         // Step 2:Update Category
         $nextID=$ID;
@@ -315,11 +315,10 @@ class GTD extends Base{
         $ids[]=$endID;
         $sql=sprintf("update %s set CategoryID=%d where ID in (%s);",static::$table,$categoryID,implode(",",$ids));
         $this->pdo->query($sql);
-        // Step 3:move this part to new Category List end
-        $endGTD=$this->getGTDEnd($categoryID);
-        if (!empty($endGTD)){
-            $sql=sprintf("update %s set CID=%d where ID=%d;",static::$table,$ID,$endGTD['ID']);
-            $this->pdo->query($sql);
+        // Step 3:move this part to new Category List Start
+        $newListEndGTD=$this->getGTDEnd($categoryID);
+        if (!empty($endGTD['ID']) && !empty($newListEndGTD['ID'])){
+            $this->saveCID($endGTD['ID'],$newListEndGTD['ID']);
         }
         // Step 4:move to the PID
         $this->post=json_encode([
@@ -412,7 +411,7 @@ class GTD extends Base{
 
     public function updateOffset($ID,$startId,$endId,$sub=true,$extraOffset=0){
         $GTD=$this->getGTD($ID);
-        !isset($GTD['offset']) && $GTD['offset']=0-self::OFFSET_STEP;
+        !isset($GTD['offset']) && $GTD['offset']=0;
         if ($sub){
             $baseOffset=$GTD['offset']+self::OFFSET_STEP+$extraOffset;
         }else{
@@ -458,7 +457,7 @@ class GTD extends Base{
             $endlessPrevent++;
             $CID=$GTDs[$CID]['ID'];
         }
-        return $this->getGTD($CID);
+        return $this->getGTD($CID,'ID','*');
     }
 
     public function getGTD($ID,$IDType='ID',$field='ID,CID,offset'){
