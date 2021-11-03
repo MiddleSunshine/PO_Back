@@ -3,6 +3,10 @@
 class OKRCheckItem extends Base{
     public static $table="OKR_CheckItem";
 
+    const STATUS_PROCESSING='new';
+    const STATUS_FINISHED='finished';
+    const STATUS_GIVE_UP='give_up';
+
     public function GetCheckItems(){
         $id=$this->get['OKR_ID'] ?? 0;
         if (!$id){
