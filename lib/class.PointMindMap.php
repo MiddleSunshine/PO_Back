@@ -45,7 +45,17 @@ class PointMindMap extends Base {
         }
         $dataBaseData=$this->getAllDataFromDataBase($id);
         $table=$this->createEmptyTable();
-        
+        $stop=1;
+    }
+
+    public function putDataBaseDataIntoTable($data,&$table){
+        foreach ($data as $PID=>$subPIDs){
+            if (!empty($subPIDs)){
+                $this->putDataBaseDataIntoTable($subPIDs,$table);
+            }else{
+
+            }
+        }
     }
 
     public function createEmptyTable(){
