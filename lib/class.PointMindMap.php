@@ -16,16 +16,26 @@ class PointMindMap extends Base {
         // subPids
         $subPids=$this->pointsConnection->getSubParentId($pid);
         if (empty($subPids)){
-            return [];
+            return true;
         }
         foreach ($subPids as $subPid){
             !isset($returnData[$subPid]) && $returnData[$subPid]=[];
-            $returnData[$subPid][]=$this->getAllSubPointID($subPid,$returnData[$subPid]);
+            $this->getAllSubPointID($subPid,$returnData[$subPid]);
         }
-        return $returnData;
     }
 
     public function getAllParentPointID($subId,&$returnData){
-        
+        // parent id
+        $parentIds=$this->pointsConnection->getParentId($subId);
+        if (empty($parentIds)){
+            return true;
+        }
+        foreach ($parentIds as $parentId){
+            if ($parentId==0){
+                continue;
+            }
+            !isset($returnData[$parentId]) && $returnData[$parentId]=[];
+            $this->getAllParentPointID($parentId,$returnData[$parentId]);
+        }
     }
 }
