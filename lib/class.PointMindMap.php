@@ -130,11 +130,22 @@ class PointMindMap extends Base {
             'ID'=>$id
         ]);
         // add the line
+        $this->addTheLine($table);
         return self::returnActionResult(
             [
                 'Table'=>$table
             ]
         );
+    }
+
+    public function addTheLine(&$table){
+        foreach ($table as $outsideIndex=>$lines){
+            foreach ($lines as $insideIndex=>$item){
+                if ($item['Type']==PointTable::getTableType()){
+                    
+                }
+            }
+        }
     }
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
