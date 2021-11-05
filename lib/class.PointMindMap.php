@@ -30,9 +30,7 @@ class PointTable extends TablePart{
 
     protected static function getTableData($data = [])
     {
-        return [
-            'ID'=>$data['ID']
-        ];
+        return $data;
     }
 }
 
@@ -126,14 +124,12 @@ class PointMindMap extends Base {
             true
         );
         // put center data
-        $table[0][$centerX]=PointTable::getTable([
-            'ID'=>$id
-        ]);
+        $table[0][$centerX]=PointTable::getTable($this->point->getPointDetail($id));
         // add the line
         $this->addTheLine($table);
         return self::returnActionResult(
             [
-                'Table'=>$table
+                'Table'=>array_values($table)
             ]
         );
     }
@@ -142,7 +138,20 @@ class PointMindMap extends Base {
         foreach ($table as $outsideIndex=>$lines){
             foreach ($lines as $insideIndex=>$item){
                 if ($item['Type']==PointTable::getTableType()){
-
+                    if (isset($table[$outsideIndex][$insideIndex+2]) && $table[$outsideIndex][$insideIndex+2]['Type']==PointTable::getTableType()){
+                        $table[$outsideIndex][$insideIndex+1]=CD::getTable();
+                        if (isset($table[$outsideIndex+1][$insideIndex+1])){
+                            $table[$outsideIndex+1][$insideIndex+1]==OneLine::getTable();
+                        }
+                    }
+                    if (isset($table[$outsideIndex+2][$insideIndex]) && $table[$outsideIndex+2][$insideIndex]['Type']==PointTable::getTableType()){
+                        if (isset($table[$outsideIndex+2][$insideIndex+2]) && $table[$outsideIndex+2][$insideIndex+2]['Type'==PointTable::getTableType()]){
+                            $table[$outsideIndex][$insideIndex+1]=A::getTable();
+                        }else{
+                            $table[$outsideIndex][$insideIndex+1]=AC::getTable();
+                            $table[$outsideIndex+1][$insideIndex+1]=OneLine::getTable();
+                        }
+                    }
                 }
             }
         }
