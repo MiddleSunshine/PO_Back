@@ -142,7 +142,7 @@ class PointMindMap extends Base {
         foreach ($table as $outsideIndex=>$lines){
             foreach ($lines as $insideIndex=>$item){
                 if ($item['Type']==PointTable::getTableType()){
-                    
+
                 }
             }
         }
@@ -150,9 +150,7 @@ class PointMindMap extends Base {
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
         foreach ($data as $pid=>$subIds){
-            $table[$y][$x]=PointTable::getTable([
-                'ID'=>$pid
-            ]);
+            $table[$y][$x]=PointTable::getTable($this->point->getPointDetail($pid));
             if (!empty($subIds)){
                 $y=$this->putDataBaseDataIntoTable($subIds,$table,$addX?($x+2):($x-2),$y,$addX);
             }
