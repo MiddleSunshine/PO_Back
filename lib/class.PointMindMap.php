@@ -42,7 +42,8 @@ class PointMindMap extends Base {
 
     public $maxParentDeep=[];
     public $maxSubDeep=[];
-    public $maxSubPoints=0;
+    public $SubPointsAmount=0;
+    public $ParentPointsAmount=0;
 
     public function __construct($get = [], $post = [])
     {
@@ -59,33 +60,40 @@ class PointMindMap extends Base {
         }
         $dataBaseData=$this->getAllDataFromDataBase($id);
         $table=$this->createEmptyTable();
-        $centerX=count($this->maxParentDeep)*2;
-        // todo 这部分的代码已经没有问题了，但是创建Table部分的数据有点不对，所以还需要调整一下
+        $centerX=count($this->maxParentDeep);
+        // put left data
         $this->putDataBaseDataIntoTable(
             $dataBaseData[0],
             $table,
             $centerX,
             0
         );
+        // put right data
         $this->putDataBaseDataIntoTable(
             $dataBaseData[1],
             $table,
-            $centerX+2,
-            0
+            $centerX+4,
+            0,
+            true
         );
-        return $table;
+        // put center data
+        $table[0][$centerX]=PointTable::getTable([
+            'ID'=>$id
+        ]);
+        return self::returnActionResult(
+            [
+                'Table'=>$table
+            ]
+        );
     }
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
         foreach ($data as $pid=>$subIds){
-            $table[$y][$x]=$pid;
+            $table[$y][$x]=PointTable::getTable([
+                'ID'=>$pid
+            ]);
             if (!empty($subIds)){
-                if ($addX){
-                    $x+=2;
-                }else{
-                    $x-=2;
-                }
-                $y=$this->putDataBaseDataIntoTable($subIds,$table,$x,$y,$addX)+1;
+                $y=$this->putDataBaseDataIntoTable($subIds,$table,$addX?($x+2):($x-2),$y,$addX);
             }
             $y+=2;
         }
@@ -94,8 +102,8 @@ class PointMindMap extends Base {
 
     public function createEmptyTable(){
         $table=[];
-        $outsideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+1;
-        $insideLength=$this->maxSubPoints*2;
+        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)*2;
+        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+1;
         for ($outsideIndex=0;$outsideIndex<$outsideLength;$outsideIndex++){
             $table[$outsideIndex]=[];
             for ($insideIndex=0;$insideIndex<$insideLength;$insideIndex++){
@@ -119,34 +127,35 @@ class PointMindMap extends Base {
         // subPids
         $subPids=$this->pointsConnection->getSubParentId($pid);
         if (empty($subPids)){
-            return true;
+            $this->SubPointsAmount++;
+            return false;
         }
         $deep>0 && $this->maxSubDeep[$deep]=1;
-        $subPidAmount=count($subPids);
-        $subPidAmount>$this->maxSubPoints && $this->maxSubPoints=$subPidAmount;
         $deep++;
         foreach ($subPids as $subPid){
             !isset($returnData[$subPid]) && $returnData[$subPid]=[];
             $this->getAllSubPointID($subPid,$returnData[$subPid],$deep);
         }
+        return true;
     }
 
     public function getAllParentPointID($subId,&$returnData,$deep=0){
         // parent id
         $parentIds=$this->pointsConnection->getParentId($subId);
         if (empty($parentIds)){
-            return true;
+            $this->ParentPointsAmount++;
+            return false;
         }
         $deep>0 && $this->maxParentDeep[$deep]=1;
-        $parentIdAmount=count($parentIds);
-        $parentIdAmount>$this->maxSubPoints && $this->maxSubPoints=$parentIdAmount;
         $deep++;
         foreach ($parentIds as $parentId){
             if ($parentId==0){
+                $this->ParentPointsAmount++;
                 continue;
             }
             !isset($returnData[$parentId]) && $returnData[$parentId]=[];
             $this->getAllParentPointID($parentId,$returnData[$parentId],$deep);
         }
+        return true;
     }
 }
