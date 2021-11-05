@@ -1,6 +1,6 @@
 <?php
 abstract class TablePart{
-    abstract protected static function getTableType();
+    abstract public static function getTableType();
     abstract protected static function getTableData($data=[]);
     public static function getTable($data=[]){
         return [
@@ -16,14 +16,14 @@ class EmptyTable extends TablePart{
         return [];
     }
 
-    protected static function getTableType()
+    public static function getTableType()
     {
         return "Empty";
     }
 }
 
 class PointTable extends TablePart{
-    protected static function getTableType()
+    public static function getTableType()
     {
         return 'Point';
     }
@@ -34,6 +34,55 @@ class PointTable extends TablePart{
             'ID'=>$data['ID']
         ];
     }
+}
+
+class CD extends TablePart {
+    public static function getTableType()
+    {
+        return "CD";
+    }
+
+    protected static function getTableData($data = [])
+    {
+        return [];
+    }
+}
+
+class OneLine extends TablePart{
+    public static function getTableType()
+    {
+        return "One_Line";
+    }
+
+    protected static function getTableData($data = [])
+    {
+        return [];
+    }
+}
+
+class AC extends TablePart{
+    public static function getTableType()
+    {
+        return "AC";
+    }
+
+    protected static function getTableData($data = [])
+    {
+        return [];
+    }
+}
+
+class A extends TablePart{
+    public static function getTableType()
+    {
+        return "A";
+    }
+
+    protected static function getTableData($data = [])
+    {
+        return [];
+    }
+
 }
 
 class PointMindMap extends Base {
@@ -80,6 +129,7 @@ class PointMindMap extends Base {
         $table[0][$centerX]=PointTable::getTable([
             'ID'=>$id
         ]);
+        // add the line
         return self::returnActionResult(
             [
                 'Table'=>$table
