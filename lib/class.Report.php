@@ -17,6 +17,9 @@ class Report extends Base{
             );
             $page++;
             $points=$this->pdo->getRows($sql);
+            if (empty($points)){
+                break;
+            }
             foreach ($points as $point){
                 $date=date("m-d",strtotime($point['LastUpdateTime']));
                 $status=$point['status'];
@@ -51,6 +54,40 @@ class Report extends Base{
             'endTime'=>$endTime,
             'post'=>$this->post
         ]);
+    }
+
+    public function Points(){
+        $this->post=json_decode($this->post,1);
+        $startTime=$this->post['startTime'] ?? '';
+        $endTime=$this->post['endTime'] ?? '';
+        empty($startTime) && $startTime=date("Y-m-d 00:00:00",strtotime("-15 day"));
+        empty($endTime) && $endTime=date("Y-m-d 23:59:59");
+        $page=1;
+        $pageSize=5000;
+        $returnData=[];
+        while ($page<100){
+            $sql=sprintf(
+                "select LastUpdateTime,Point,status from %s where LastUpdateTime between '%s' and '%s' and Deleted=0 limit %d,%d",
+                Points::$table,$startTime,$endTime,($page-1)*$pageSize,$pageSize
+            );
+            $page++;
+            $points=$this->pdo->getRows($sql);
+            if (empty($points)){
+                break;
+            }
+            foreach ($points as $point){
+                $date=date("m-d",strtotime($point['LastUpdateTime']));
+                !isset($returnData[$date]) && $returnData[$date]=0;
+                switch ($point['status']){
+                    case Points::STATUS_SOLVED:
+                    case Points::STATUS_ARCHIVED:
+                        $returnData[$date]+=$point['Point'];
+                        break;
+                }
+            }
+        }
+        $dateRange=self::getDateRange($startTime,$endTime,"m-d");
+        
     }
 
     public function GetPercent(){

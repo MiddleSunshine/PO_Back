@@ -22,6 +22,20 @@ class EmptyTable extends TablePart{
     }
 }
 
+class PointTable extends TablePart{
+    protected static function getTableType()
+    {
+        return 'Point';
+    }
+
+    protected static function getTableData($data = [])
+    {
+        return [
+            'ID'=>$data['ID']
+        ];
+    }
+}
+
 class PointMindMap extends Base {
     public $pointsConnection;
     public $point;
@@ -45,23 +59,43 @@ class PointMindMap extends Base {
         }
         $dataBaseData=$this->getAllDataFromDataBase($id);
         $table=$this->createEmptyTable();
-        $stop=1;
+        $centerX=count($this->maxParentDeep)*2;
+        // todo 这部分的代码已经没有问题了，但是创建Table部分的数据有点不对，所以还需要调整一下
+        $this->putDataBaseDataIntoTable(
+            $dataBaseData[0],
+            $table,
+            $centerX,
+            0
+        );
+        $this->putDataBaseDataIntoTable(
+            $dataBaseData[1],
+            $table,
+            $centerX+2,
+            0
+        );
+        return $table;
     }
 
-    public function putDataBaseDataIntoTable($data,&$table){
-        foreach ($data as $PID=>$subPIDs){
-            if (!empty($subPIDs)){
-                $this->putDataBaseDataIntoTable($subPIDs,$table);
-            }else{
-
+    public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
+        foreach ($data as $pid=>$subIds){
+            $table[$y][$x]=$pid;
+            if (!empty($subIds)){
+                if ($addX){
+                    $x+=2;
+                }else{
+                    $x-=2;
+                }
+                $y=$this->putDataBaseDataIntoTable($subIds,$table,$x,$y,$addX)+1;
             }
+            $y+=2;
         }
+        return $y;
     }
 
     public function createEmptyTable(){
         $table=[];
-        $outsideLength=$this->maxSubPoints*2;
-        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+1;
+        $outsideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+1;
+        $insideLength=$this->maxSubPoints*2;
         for ($outsideIndex=0;$outsideIndex<$outsideLength;$outsideIndex++){
             $table[$outsideIndex]=[];
             for ($insideIndex=0;$insideIndex<$insideLength;$insideIndex++){
