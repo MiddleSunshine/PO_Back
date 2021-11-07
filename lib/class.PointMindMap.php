@@ -13,7 +13,7 @@ abstract class TablePart{
 class EmptyTable extends TablePart{
     protected static function getTableData($data=[])
     {
-        return [];
+        return '0,0,0,0';
     }
 
     public static function getTableType()
@@ -34,54 +34,18 @@ class PointTable extends TablePart{
     }
 }
 
-class CD extends TablePart {
+class Plus extends TablePart{
     public static function getTableType()
     {
-        return "CD";
+        return "Plus";
     }
 
     protected static function getTableData($data = [])
     {
-        return [];
+        return implode(",",$data);
     }
 }
 
-class OneLine extends TablePart{
-    public static function getTableType()
-    {
-        return "One_Line";
-    }
-
-    protected static function getTableData($data = [])
-    {
-        return [];
-    }
-}
-
-class AC extends TablePart{
-    public static function getTableType()
-    {
-        return "AC";
-    }
-
-    protected static function getTableData($data = [])
-    {
-        return [];
-    }
-}
-
-class A extends TablePart{
-    public static function getTableType()
-    {
-        return "A";
-    }
-
-    protected static function getTableData($data = [])
-    {
-        return [];
-    }
-
-}
 
 class PointMindMap extends Base {
     public $pointsConnection;
@@ -126,7 +90,7 @@ class PointMindMap extends Base {
         // put center data
         $table[0][$centerX]=PointTable::getTable($this->point->getPointDetail($id));
         // add the line
-        $this->addTheLine($table);
+        $this->addTheLine($table,$id);
         return self::returnActionResult(
             [
                 'Table'=>array_values($table)
@@ -134,25 +98,43 @@ class PointMindMap extends Base {
         );
     }
 
-    public function addTheLine(&$table){
+    public function addTheLine(&$table,$id){
+        $checkLeft=true;
         foreach ($table as $outsideIndex=>$lines){
             foreach ($lines as $insideIndex=>$item){
-                if ($item['Type']==PointTable::getTableType()){
-                    if (isset($table[$outsideIndex][$insideIndex+2]) && $table[$outsideIndex][$insideIndex+2]['Type']==PointTable::getTableType()){
-                        $table[$outsideIndex][$insideIndex+1]=CD::getTable();
-                        if (isset($table[$outsideIndex+1][$insideIndex+1])){
-                            $table[$outsideIndex+1][$insideIndex+1]==OneLine::getTable();
-                        }
-                    }
-                    if (isset($table[$outsideIndex+2][$insideIndex]) && $table[$outsideIndex+2][$insideIndex]['Type']==PointTable::getTableType()){
-                        if (isset($table[$outsideIndex+2][$insideIndex+2]) && $table[$outsideIndex+2][$insideIndex+2]['Type'==PointTable::getTableType()]){
-                            $table[$outsideIndex][$insideIndex+1]=A::getTable();
-                        }else{
-                            $table[$outsideIndex][$insideIndex+1]=AC::getTable();
-                            $table[$outsideIndex+1][$insideIndex+1]=OneLine::getTable();
-                        }
-                    }
+                if (isset($item['Data']['ID']) && $item['Data']['ID']==$id){
+                    $checkLeft=false;
                 }
+                if ($item['Type']==PointTable::getTableType()){
+                    continue;
+                }
+                $A=0;
+                $B=0;
+                $C=0;
+                $D=0;
+                // check A
+                if (isset($table[$outsideIndex-1][$insideIndex]) && $table[$outsideIndex-1][$insideIndex]['Type']==Plus::getTableType()){
+                    $A=1;
+                }
+                // check B
+                if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
+                    $B=1;
+                }
+                // check C
+                if ($checkLeft){
+                    $checkOutsidePotion=$outsideIndex-2;
+                }else{
+                    $checkOutsidePotion=$outsideIndex+2;
+                }
+                if (isset($table[$checkOutsidePotion][$insideIndex+2]) && $table[$checkOutsidePotion][$insideIndex+2]['Type']==PointTable::getTableType()){
+                    $C=1;
+                }
+                if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
+                    $D=1;
+                }
+                $table[$outsideIndex][$insideIndex]=Plus::getTable([
+                    $A,$B,$C,$D
+                ]);
             }
         }
     }
@@ -170,8 +152,8 @@ class PointMindMap extends Base {
 
     public function createEmptyTable(){
         $table=[];
-        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)*2;
-        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+1;
+        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)*2+10;
+        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+10;
         for ($outsideIndex=0;$outsideIndex<$outsideLength;$outsideIndex++){
             $table[$outsideIndex]=[];
             for ($insideIndex=0;$insideIndex<$insideLength;$insideIndex++){
