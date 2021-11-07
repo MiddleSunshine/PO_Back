@@ -72,12 +72,12 @@ class PointMindMap extends Base {
         }
         $dataBaseData=$this->getAllDataFromDataBase($id);
         $table=$this->createEmptyTable();
-        $centerX=count($this->maxParentDeep);
+        $centerX=count($this->maxParentDeep)+2;
         // put left data
         $this->putDataBaseDataIntoTable(
             $dataBaseData[0],
             $table,
-            $centerX,
+            $centerX-2,
             0
         );
         // put right data
@@ -117,15 +117,18 @@ class PointMindMap extends Base {
                     }
                 }
                 // check B
-                if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
+                if (isset($table[$outsideIndex][$insideIndex+1]) && $table[$outsideIndex][$insideIndex+1]['Type']==PointTable::getTableType()){
                     $B=1;
                 }
                 // check C
-                if (isset($this->yData[$outsideIndex][$insideIndex]) && isset($table[$outsideIndex-1][$insideIndex]) && $table[$outsideIndex-1][$insideIndex]['Type']==Plus::getTableType()){
+                if (isset($this->yData[$outsideIndex][$insideIndex+1])){
                     $C=1;
                 }
                 if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
                     $D=1;
+                }
+                if (!$A && !$B && !$C && $D){
+                    $D=0;
                 }
                 $table[$outsideIndex][$insideIndex]=Plus::getTable([
                     $A,$B,$C,$D
@@ -136,24 +139,30 @@ class PointMindMap extends Base {
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
         $startY=$y;
+        $hasData=false;
+        $endY=$y;
         foreach ($data as $pid=>$subIds){
+            $hasData=true;
+            $endY=$y;
             $table[$y][$x]=PointTable::getTable($this->point->getPointDetail($pid));
             if (!empty($subIds)){
                 $y=$this->putDataBaseDataIntoTable($subIds,$table,$addX?($x+2):($x-2),$y,$addX);
             }
-            $y+=2;
+            $y+=1;
         }
-        for ($i=$startY;$i<=($y-2);$i++){
-            !isset($this->yData[$i]) && $this->yData[$i]=[];
-            $this->yData[$i][$x]=1;
+        if ($hasData){
+            for ($i=$startY;$i<$endY;$i++){
+                !isset($this->yData[$i]) && $this->yData[$i]=[];
+                $this->yData[$i][$x]=1;
+            }
         }
-        return $y-2;
+        return $y-1;
     }
 
     public function createEmptyTable(){
         $table=[];
-        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)*2+10;
-        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+10;
+        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)+3;
+        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+3;
         for ($outsideIndex=0;$outsideIndex<$outsideLength;$outsideIndex++){
             $table[$outsideIndex]=[];
             for ($insideIndex=0;$insideIndex<$insideLength;$insideIndex++){
