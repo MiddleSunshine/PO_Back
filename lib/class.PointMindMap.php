@@ -46,7 +46,6 @@ class Plus extends TablePart{
     }
 }
 
-
 class PointMindMap extends Base {
     public $pointsConnection;
     public $point;
@@ -55,6 +54,8 @@ class PointMindMap extends Base {
     public $maxSubDeep=[];
     public $SubPointsAmount=0;
     public $ParentPointsAmount=0;
+
+    public $yData=[];
 
     public function __construct($get = [], $post = [])
     {
@@ -90,7 +91,7 @@ class PointMindMap extends Base {
         // put center data
         $table[0][$centerX]=PointTable::getTable($this->point->getPointDetail($id));
         // add the line
-        $this->addTheLine($table,$id);
+        $this->addTheLine($table);
         return self::returnActionResult(
             [
                 'Table'=>array_values($table)
@@ -98,13 +99,9 @@ class PointMindMap extends Base {
         );
     }
 
-    public function addTheLine(&$table,$id){
-        $checkLeft=true;
+    public function addTheLine(&$table){
         foreach ($table as $outsideIndex=>$lines){
             foreach ($lines as $insideIndex=>$item){
-                if (isset($item['Data']['ID']) && $item['Data']['ID']==$id){
-                    $checkLeft=false;
-                }
                 if ($item['Type']==PointTable::getTableType()){
                     continue;
                 }
@@ -124,12 +121,7 @@ class PointMindMap extends Base {
                     $B=1;
                 }
                 // check C
-                if ($checkLeft){
-                    $checkOutsidePotion=$outsideIndex-1;
-                }else{
-                    $checkOutsidePotion=$outsideIndex+1;
-                }
-                if (isset($table[$checkOutsidePotion][$insideIndex+2]) && $table[$checkOutsidePotion][$insideIndex+2]['Type']==PointTable::getTableType()){
+                if (isset($this->yData[$outsideIndex][$insideIndex]) && isset($table[$outsideIndex-1][$insideIndex]) && $table[$outsideIndex-1][$insideIndex]['Type']==Plus::getTableType()){
                     $C=1;
                 }
                 if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
@@ -143,6 +135,7 @@ class PointMindMap extends Base {
     }
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
+        $startY=$y;
         foreach ($data as $pid=>$subIds){
             $table[$y][$x]=PointTable::getTable($this->point->getPointDetail($pid));
             if (!empty($subIds)){
@@ -150,7 +143,11 @@ class PointMindMap extends Base {
             }
             $y+=2;
         }
-        return $y;
+        for ($i=$startY;$i<=($y-2);$i++){
+            !isset($this->yData[$i]) && $this->yData[$i]=[];
+            $this->yData[$i][$x]=1;
+        }
+        return $y-2;
     }
 
     public function createEmptyTable(){
