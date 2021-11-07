@@ -72,7 +72,7 @@ class PointMindMap extends Base {
         }
         $dataBaseData=$this->getAllDataFromDataBase($id);
         $table=$this->createEmptyTable();
-        $centerX=count($this->maxParentDeep)+2;
+        $centerX=count($this->maxParentDeep)*2+2;
         // put left data
         $this->putDataBaseDataIntoTable(
             $dataBaseData[0],
@@ -130,6 +130,9 @@ class PointMindMap extends Base {
                 if (!$A && !$B && !$C && $D){
                     $D=0;
                 }
+                if (!$A && !$D && !$C && $B){
+                    $B=0;
+                }
                 $table[$outsideIndex][$insideIndex]=Plus::getTable([
                     $A,$B,$C,$D
                 ]);
@@ -161,8 +164,8 @@ class PointMindMap extends Base {
 
     public function createEmptyTable(){
         $table=[];
-        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)+3;
-        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+3;
+        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)+5;
+        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+5;
         for ($outsideIndex=0;$outsideIndex<$outsideLength;$outsideIndex++){
             $table[$outsideIndex]=[];
             for ($insideIndex=0;$insideIndex<$insideLength;$insideIndex++){
