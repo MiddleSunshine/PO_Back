@@ -83,7 +83,7 @@ class PointMindMap extends Base {
         $this->putDataBaseDataIntoTable(
             $dataBaseData[1],
             $table,
-            $centerX+4,
+            $centerX+2,
             0,
             true
         );
@@ -114,7 +114,10 @@ class PointMindMap extends Base {
                 $D=0;
                 // check A
                 if (isset($table[$outsideIndex-1][$insideIndex]) && $table[$outsideIndex-1][$insideIndex]['Type']==Plus::getTableType()){
-                    $A=1;
+                    $data=explode(",",$table[$outsideIndex-1][$insideIndex]['Data']);
+                    if ($data[2]==1){
+                        $A=1;
+                    }
                 }
                 // check B
                 if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
@@ -122,9 +125,9 @@ class PointMindMap extends Base {
                 }
                 // check C
                 if ($checkLeft){
-                    $checkOutsidePotion=$outsideIndex-2;
+                    $checkOutsidePotion=$outsideIndex-1;
                 }else{
-                    $checkOutsidePotion=$outsideIndex+2;
+                    $checkOutsidePotion=$outsideIndex+1;
                 }
                 if (isset($table[$checkOutsidePotion][$insideIndex+2]) && $table[$checkOutsidePotion][$insideIndex+2]['Type']==PointTable::getTableType()){
                     $C=1;
