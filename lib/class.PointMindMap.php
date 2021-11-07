@@ -94,7 +94,8 @@ class PointMindMap extends Base {
         $this->addTheLine($table);
         return self::returnActionResult(
             [
-                'Table'=>array_values($table)
+                'Table'=>array_values($table),
+                'point'=>$this->point->getPointDetail($id)
             ]
         );
     }
