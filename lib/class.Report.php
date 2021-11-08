@@ -115,7 +115,7 @@ class Report extends Base{
         foreach ($dateRange as $date){
             $point[]=$returnData[$date] ?? 0;
             $sumOfWilling+=$willingData[$date] ?? 0;
-            $willingAmount[]=$sumOfWilling;
+            $willingAmount[]=$willingData[$date] ?? 0;
             $amount+=$returnData[$date] ?? 0;
             $pointAmount[]=$amount;
             $exchangeAblePoint[]=$amount-$sumOfWilling;
@@ -123,11 +123,11 @@ class Report extends Base{
         return self::returnActionResult(
             [
                 'point'=>[
-                    [
-                        'data'=>$pointAmount,
-                        'name'=>'Point Amount',
-                        'type'=>'line'
-                    ],
+                    // [
+                    //     'data'=>$pointAmount,
+                    //     'name'=>'Point Amount',
+                    //     'type'=>'line'
+                    // ],
                     [
                         'data'=>$point,
                         'name'=>'Point',
@@ -141,7 +141,7 @@ class Report extends Base{
                     [
                         'data'=>$exchangeAblePoint,
                         'name'=>'Point Rest',
-                        'type'=>'bar'
+                        'type'=>'line'
                     ]
                 ],
                 'xData'=>$dateRange,
