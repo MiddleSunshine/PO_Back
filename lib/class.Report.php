@@ -65,6 +65,21 @@ class Report extends Base{
         $page=1;
         $pageSize=5000;
         $returnData=[];
+        $sql=sprintf(
+            "select sum(Point) as amount from %s where LastUpdateTime<'%s' and status in ('%s','%s');",
+            Points::$table,
+            $startTime,
+            Points::STATUS_SOLVED,
+            Points::STATUS_ARCHIVED
+        );
+        $basePointAmount=$this->pdo->getFirstRow($sql);
+        $sql=sprintf(
+            "select sum(Point) as amount from %s where LastUpdateTime<'%s' and status='%s'",
+            Willing::$table,
+            $startTime,
+            Willing::STATUS_EXCHANGED
+        );
+        $baseWillingAmount=$this->pdo->getFirstRow($sql);
         while ($page<100){
             $sql=sprintf(
                 "select LastUpdateTime,Point,status from %s where LastUpdateTime between '%s' and '%s' and Deleted=0 limit %d,%d",
@@ -94,14 +109,16 @@ class Report extends Base{
             $willingData[$date]=$willing['Point'];
         }
         $dateRange=self::getDateRange($startTime,$endTime,"m-d");
-        $point=$willingAmount=$pointAmount=[];
-        $amount=$sumOfWilling=0;
+        $point=$willingAmount=$pointAmount=$exchangeAblePoint=[];
+        $amount=$basePointAmount['amount'] ?? 0;
+        $sumOfWilling=$baseWillingAmount['amount'] ?? 0;
         foreach ($dateRange as $date){
             $point[]=$returnData[$date] ?? 0;
             $sumOfWilling+=$willingData[$date] ?? 0;
             $willingAmount[]=$sumOfWilling;
             $amount+=$returnData[$date] ?? 0;
             $pointAmount[]=$amount;
+            $exchangeAblePoint[]=$amount-$sumOfWilling;
         }
         return self::returnActionResult(
             [
@@ -120,6 +137,11 @@ class Report extends Base{
                         'data'=>$willingAmount,
                         'name'=>'Willing',
                         'type'=>'line'
+                    ],
+                    [
+                        'data'=>$exchangeAblePoint,
+                        'name'=>'Point Rest',
+                        'type'=>'bar'
                     ]
                 ],
                 'xData'=>$dateRange,
