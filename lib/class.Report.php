@@ -95,12 +95,13 @@ class Report extends Base{
         }
         $dateRange=self::getDateRange($startTime,$endTime,"m-d");
         $point=$willingAmount=$pointAmount=[];
-        $amount=0;
+        $amount=$sumOfWilling=0;
         foreach ($dateRange as $date){
             $point[]=$returnData[$date] ?? 0;
-            $willingAmount[]=$willingData[$date] ?? 0;
+            $sumOfWilling+=$willingData[$date] ?? 0;
+            $willingAmount[]=$sumOfWilling;
             $amount+=$returnData[$date] ?? 0;
-            $pointAmount[]=$amount-($willingData[$date] ?? 0);
+            $pointAmount[]=$amount;
         }
         return self::returnActionResult(
             [
