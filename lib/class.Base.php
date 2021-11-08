@@ -56,7 +56,7 @@ class Base{
                     continue;
                 }
                 if ($value!==null){
-                    $sqlTemplate[]=sprintf("%s='%s'",$filed,$value);
+                    $sqlTemplate[]=sprintf("%s='%s'",$filed,addslashes($value));
                 }else{
                     $sqlTemplate[]=sprintf("%s=null",$filed);
                 }
@@ -75,13 +75,13 @@ class Base{
                 if ($value===null){
                     $sqlTemplate.="null,";
                 }else{
-                    $sqlTemplate.=sprintf("'%s',",$value);
+                    $sqlTemplate.=sprintf("'%s',",addslashes($value));
                 }
             }
             $sqlTemplate=substr($sqlTemplate,0,-1);
             // insert 之前已有的值，然后就会变成 update
             if (!empty($keyName)){
-                $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,$this->post[$keyName]);
+                $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,addslashes($this->post[$keyName]));
                 $data=$this->pdo->getFirstRow($sqlSearch);
                 if (!empty($data)){
                     return $this->handleSql($sql,$data['ID'],$keyName);
@@ -103,7 +103,7 @@ class Base{
             $sql=sprintf("select ID from %s order by ID desc limit 1;",static::$table);
         }else{
             if (!empty($keyName)){
-                $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+                $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,addslashes($this->post[$keyName] ?? ''));
             }else{
                 $sql=null;
             }
