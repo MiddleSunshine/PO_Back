@@ -86,8 +86,47 @@ class Report extends Base{
                 }
             }
         }
+        $sql=sprintf("select * from %s where status='%s'",Willing::$table,Willing::STATUS_EXCHANGED);
+        $willings=$this->pdo->getRows($sql);
+        $willingData=[];
+        foreach ($willings as $willing){
+            $date=date("m-d",strtotime($willing['LastUpdateTime']));
+            $willingData[$date]=$willing['Point'];
+        }
         $dateRange=self::getDateRange($startTime,$endTime,"m-d");
-        
+        $point=$willingAmount=$pointAmount=[];
+        $amount=0;
+        foreach ($dateRange as $date){
+            $point[]=$returnData[$date] ?? 0;
+            $willingAmount[]=$willingData[$date] ?? 0;
+            $amount+=$returnData[$date] ?? 0;
+            $pointAmount[]=$amount-($willingData[$date] ?? 0);
+        }
+        return self::returnActionResult(
+            [
+                'point'=>[
+                    [
+                        'data'=>$pointAmount,
+                        'name'=>'Point Amount',
+                        'type'=>'line'
+                    ],
+                    [
+                        'data'=>$point,
+                        'name'=>'Point',
+                        'type'=>'line'
+                    ],
+                    [
+                        'data'=>$willingAmount,
+                        'name'=>'Willing',
+                        'type'=>'line'
+                    ]
+                ],
+                'xData'=>$dateRange,
+                'StartTime'=>$startTime,
+                'EndTime'=>$endTime,
+                'post'=>$this->post
+            ]
+        );
     }
 
     public function GetPercent(){
