@@ -132,7 +132,7 @@ class Points extends Base{
             // insert
             $point['AddTime']=date("Y-m-d H:i:s");
             $point['LastUpdateTime']=date("Y-m-d H:i:s");
-            empty($point['status']) && $point['status']=self::STATUS_NEW;
+            empty($point['status']) && $point['status']=self::STATUS_INIT;
             array_map("trim",$point);
             $this->post['keyword']=$point['keyword'];
             $this->handleSql($point,0,'keyword');
