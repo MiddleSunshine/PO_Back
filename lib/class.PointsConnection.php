@@ -3,6 +3,38 @@
 class PointsConnection extends Base{
     public static $table="Points_Connection";
 
+    public function NewConnection(){
+        $startID=$this->get['StartID'] ?? -1;
+        $PID=$this->get['PID'] ?? -1;
+        $subPID=$this->get['SubPID'] ?? -1;
+        if ($PID<0 || $subPID<0 || $startID<0){
+            return self::returnActionResult($this->get,false,"参数错误");
+        }
+        $pids=[$startID];
+        $endlessPrevent=0;
+        $prePid=-1;
+        while (!empty($pids) && $endlessPrevent<1000){
+            $endlessPrevent++;
+            foreach ($pids as $pid){
+                $subIds=$this->getSubParentId($pid);
+                if (in_array($subPID,$subIds)){
+                    $prePid=$pid;
+                    break;
+                }
+            }
+        }
+        if ($prePid<0){
+            return self::returnActionResult(
+                $this->get,
+                false,
+                "Data Wrong!"
+            );
+        }
+        $this->deleteConnection($prePid,$subPID);
+        $this->updatePointsConnection($PID,$subPID);
+        return self::returnActionResult();
+    }
+
     public function Update(){
         $PID=$this->get['PID'] ?? -1;
         $subPID=$this->get['SubPID'] ?? -1;
@@ -19,6 +51,11 @@ class PointsConnection extends Base{
         if ($PID<0 || $subPID<0){
             return self::returnActionResult($this->get,false,"参数错误");
         }
+        $this->deleteConnection($PID,$subPID);
+        return self::returnActionResult($this->post);
+    }
+
+    public function deleteConnection($PID,$subPID){
         $sql=sprintf("delete from %s where PID=%d and SubPID=%d;",static::$table,$PID,$subPID);
         $this->pdo->query($sql);
         $sql=sprintf("select * from %s where SubPID=%d;",static::$table,$subPID);
@@ -27,7 +64,6 @@ class PointsConnection extends Base{
             $sql=sprintf("update %s set status='%s' where ID=%d",Points::$table,Points::STATUS_INIT,$subPID);
             $this->pdo->query($sql);
         }
-        return self::returnActionResult($this->post);
     }
 
     public function getSubParentId($pid){
