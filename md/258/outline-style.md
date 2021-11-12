@@ -1,0 +1,10 @@
+- none没有样式
+- dotted 定义点状的轮廓。
+- dashed 定义虚线轮廓。
+- solid 定义实线轮廓。
+- double 定义双线轮廓。双线的宽度等同于 outline-width 的值。
+- groove 定义 3D 凹槽轮廓。此效果取决于 outline-color 值。
+- ridge 定义 3D 凸槽轮廓。此效果取决于 outline-color 值。
+- inset 定义 3D 凹边轮廓。此效果取决于 outline-color 值。
+- outset 定义 3D 凸边轮廓。此效果取决于 outline-color 值。
+- inherit 规定应该从父元素继承轮廓样式的设置。
