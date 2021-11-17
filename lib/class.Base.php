@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__.DIRECTORY_SEPARATOR."class.MySqlPdo.php";
+require_once __DIR__.DIRECTORY_SEPARATOR."class.MysqlPdo.php";
 
 class Base{
     public static $table='';
