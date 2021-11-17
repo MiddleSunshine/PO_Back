@@ -122,7 +122,8 @@ class PlanItem extends Base{
             "select ID,Name,PID,PPID from %s where Deleted=0 and FinishTime is null order by ID;",
             static::$table
         );
-        $planItems=$this->pdo->getRows($sql);
+//        $planItems=$this->pdo->getRows($sql);
+        $planItems=[];
         $planItemsIndex=0;
         $startTimeStamp=time();
         $endTimeStamp=strtotime($endTime);
