@@ -26,6 +26,24 @@ class Base{
         return self::returnActionResult($data);
     }
 
+    public function CommonSave(){
+        $this->post=json_decode($this->post,1);
+        if (empty($this->post['ID'])){
+            return self::returnActionResult($this->post,false,"Error Data");
+        }
+        return $this->handleSql($this->post,$this->post['ID']);
+    }
+
+    public function CommonDelete(){
+        $id=$this->get['ID'] ?? 0;
+        if ($id<=0){
+            return self::returnActionResult($this->get,false,"Wrong Param !");
+        }
+        $sql=sprintf("delete from %s where ID=%d",static::$table,$id);
+        $this->pdo->query($sql);
+        return self::returnActionResult();
+    }
+
     public function Detail(){
         $id=$this->get['id'] ?? 0;
         if (!$id){
