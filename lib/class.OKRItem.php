@@ -14,7 +14,7 @@ class OKRItem extends Base{
     const TYPE_WEEK='week';
     const TYPE_MONTH='month';
 
-    public function getItems(){
+    public function GetItems(){
         $this->post=json_decode($this->post,1);
         $OKR_ID=$this->post['OKR_ID'] ?? 0;
         if ($OKR_ID<=0){
