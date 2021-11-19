@@ -8,6 +8,16 @@ class OKR extends Base{
     const STATUS_SUCCESS='success';
     const STATUS_FAIL='fail';
 
+    public function Index(){
+        $year=$this->get['Year'] ?? date("Y");
+        $month=$this->get['Month'] ?? date("n");
+        return self::returnActionResult(
+            [
+                'OKR'=>$this->getOKR($year,$month)
+            ]
+        );
+    }
+
     public function StartOKR(){
         $this->post=json_decode($this->post,1);
         if (empty($this->post['OKR'])){
@@ -18,12 +28,12 @@ class OKR extends Base{
             );
         }
         $year=date("Y");
-        $month=date("m");
+        $month=date("n");
         if (!empty($this->getOKR($year,$month))){
             return self::returnActionResult(
                 [
                     'year'=>$year,
-                    'month'=>$month
+                    'Month'=>$month
                 ],
                 false,
                 "OKR has been set !"
