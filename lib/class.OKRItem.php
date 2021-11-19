@@ -14,6 +14,22 @@ class OKRItem extends Base{
     const TYPE_WEEK='week';
     const TYPE_MONTH='month';
 
+    public function NewItem(){
+        $this->post=json_decode($this->post,1);
+        if (empty($this->post['Title'])){
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "Please Input The Title !"
+            );
+        }
+        if (empty($this->post['type'])){
+            $this->post['type']=self::TYPE_WEEK;
+        }
+        $this->post['AddTime']=date("Y-m-d H:i:s");
+        return $this->handleSql($this->post,0);
+    }
+
     public function GetItems(){
         $this->post=json_decode($this->post,1);
         $OKR_ID=$this->post['OKR_ID'] ?? 0;
