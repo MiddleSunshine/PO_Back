@@ -9,8 +9,8 @@ class OKR extends Base{
     const STATUS_FAIL='fail';
 
     public function Index(){
-        $year=$this->get['Year'] ?? date("Y");
-        $month=$this->get['Month'] ?? date("n");
+        $year=(!empty($this->get['Year'])) ?: date("Y");
+        $month=(!empty($this->get['Month'])) ?: date("n");
         return self::returnActionResult(
             [
                 'OKR'=>$this->getOKR($year,$month)
@@ -46,7 +46,7 @@ class OKR extends Base{
             'status'=>self::STATUS_PROCESSING,
             'AddTime'=>date("Y-m-d H:i:s")
         ];
-        $this->handleSql($sql,0);
+        return $this->handleSql($sql,0);
     }
 
     public function getOKR($year,$month){

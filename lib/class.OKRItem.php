@@ -16,6 +16,13 @@ class OKRItem extends Base{
 
     public function NewItem(){
         $this->post=json_decode($this->post,1);
+        if (empty($this->post['OKR_ID'])){
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "Wrong Param !"
+            );
+        }
         if (empty($this->post['Title'])){
             return self::returnActionResult(
                 $this->post,
@@ -26,6 +33,7 @@ class OKRItem extends Base{
         if (empty($this->post['type'])){
             $this->post['type']=self::TYPE_WEEK;
         }
+        $this->post['status']=self::STATUS_INIT;
         $this->post['AddTime']=date("Y-m-d H:i:s");
         return $this->handleSql($this->post,0);
     }
@@ -58,11 +66,11 @@ class OKRItem extends Base{
         $OKR_Items=$this->pdo->getRows($sql);
         $OKRDecision=new OKRDecision();
         foreach ($OKR_Items as &$item){
-            $item['OKR_Decisions']=$OKRDecision->getDecisions($item['ID'],OKRDecision::STATUS_PROCESSING);
+            $item['OKR_Decisions']=$OKRDecision->getDecisions($item['ID'],[OKRDecision::STATUS_PROCESSING]);
         }
         return self::returnActionResult(
             [
-                'Items'=>$this->pdo->getRows($sql)
+                'Items'=>$OKR_Items
             ]
         );
     }

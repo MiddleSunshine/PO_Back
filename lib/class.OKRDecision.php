@@ -22,9 +22,9 @@ class OKRDecision extends Base{
     }
 
     public function getDecisions($ItemId,$statusMap){
-        if (!is_array($statusMap)){
-            $statusMap[]=$statusMap;
-        }
+//        if (!is_array($statusMap)){
+//            $statusMap[]=$statusMap;
+//        }
         $status=[];
         foreach ($statusMap as $statusItem){
             $status[]=sprintf("'%s'",$statusItem);
