@@ -48,8 +48,11 @@ class OKRItem extends Base{
                 "Param Error"
             );
         }
+        $checkStatus=true;
         if (empty($this->post['status'])){
             $status=sprintf("('%s','%s')",self::STATUS_PROCESSING,self::STATUS_INIT);
+        }elseif ($this->post['status']=='all'){
+            $checkStatus=false;
         }else{
             $status=[];
             foreach ($this->post['status'] as $statusItem){
@@ -57,16 +60,24 @@ class OKRItem extends Base{
             }
             $status=sprintf("(%s)",implode(",",$status));
         }
-        $sql=sprintf(
-            "select * from %s where OKR_ID=%d and status in %s",
-            static::$table,
-            $OKR_ID,
-            $status
-        );
+        if ($checkStatus){
+            $sql=sprintf(
+                "select * from %s where OKR_ID=%d and status in %s",
+                static::$table,
+                $OKR_ID,
+                $status
+            );
+        }else{
+            $sql=sprintf(
+                "select * from %s where OKR_ID=%d;",
+                static::$table,
+                $OKR_ID
+            );
+        }
         $OKR_Items=$this->pdo->getRows($sql);
         $OKRDecision=new OKRDecision();
         foreach ($OKR_Items as &$item){
-            $item['OKR_Decisions']=$OKRDecision->getDecisions($item['ID'],[OKRDecision::STATUS_PROCESSING]);
+            $item['OKR_Decisions']=$OKRDecision->getDecisions($item['ID'],$checkStatus?[OKRDecision::STATUS_PROCESSING]:[]);
         }
         return self::returnActionResult(
             [

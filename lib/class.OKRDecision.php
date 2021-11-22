@@ -22,15 +22,16 @@ class OKRDecision extends Base{
     }
 
     public function getDecisions($ItemId,$statusMap){
-//        if (!is_array($statusMap)){
-//            $statusMap[]=$statusMap;
-//        }
-        $status=[];
-        foreach ($statusMap as $statusItem){
-            $status[]=sprintf("'%s'",$statusItem);
+        if (empty($statusMap)){
+            $sql=sprintf("select * from %s where OKR_Item_ID=%d;",static::$table,$ItemId);
+        }else{
+            $status=[];
+            foreach ($statusMap as $statusItem){
+                $status[]=sprintf("'%s'",$statusItem);
+            }
+            $status=sprintf("(%s)",implode(",",$status));
+            $sql=sprintf("select * from %s where OKR_Item_ID=%d and status in %s",static::$table,$ItemId,$status);
         }
-        $status=sprintf("(%s)",implode(",",$status));
-        $sql=sprintf("select * from %s where OKR_Item_ID=%d and status in %s",static::$table,$ItemId,$status);
         return $this->pdo->getRows($sql);
     }
 }
