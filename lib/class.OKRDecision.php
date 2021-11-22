@@ -9,7 +9,7 @@ class OKRDecision extends Base{
 
     public function NewDecision(){
         $this->post=json_decode($this->post,1);
-        if (empty($this->post['Content'])){
+        if (empty($this->post['Content']) || empty($this->post['OKR_Item_ID'])){
             return self::returnActionResult(
                 $this->post,
                 false,
