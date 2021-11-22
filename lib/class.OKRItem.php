@@ -38,6 +38,13 @@ class OKRItem extends Base{
         return $this->handleSql($this->post,0);
     }
 
+    public function preSave()
+    {
+        if ($this->post['status']==self::STATUS_FINISHED && empty($this->post['FinishTime'])){
+            $this->post['FinishTime']=date("Y-m-d H:i:s");
+        }
+    }
+
     public function GetItems(){
         $this->post=json_decode($this->post,1);
         $OKR_ID=$this->post['OKR_ID'] ?? 0;
