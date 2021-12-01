@@ -26,11 +26,16 @@ class Base{
         return self::returnActionResult($data);
     }
 
+    public function preSave(){
+
+    }
+
     public function CommonSave(){
         $this->post=json_decode($this->post,1);
         if (empty($this->post['ID'])){
             return self::returnActionResult($this->post,false,"Error Data");
         }
+        $this->preSave();
         return $this->handleSql($this->post,$this->post['ID']);
     }
 
