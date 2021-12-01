@@ -18,5 +18,9 @@ class PointSummary extends Base{
         return self::returnActionResult();
     }
 
-    
+    public function preSave()
+    {
+        $this->post['LastUpdateTime']=date("Y-m-d H:i:s");
+    }
+
 }
