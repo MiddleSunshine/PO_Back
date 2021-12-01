@@ -9,8 +9,8 @@ class OKR extends Base{
     const STATUS_FAIL='fail';
 
     public function Index(){
-        $year=(!empty($this->get['Year'])) ?: date("Y");
-        $month=(!empty($this->get['Month'])) ?: date("n");
+        $year=(!empty($this->get['Year'])) ?$this->get['Year']: date("Y");
+        $month=(!empty($this->get['Month'])) ?$this->get['Month']: date("n");
         return self::returnActionResult(
             [
                 'OKR'=>$this->getOKR($year,$month)
