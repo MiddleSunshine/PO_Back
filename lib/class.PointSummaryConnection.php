@@ -11,6 +11,25 @@ class PointSummaryConnection extends Base{
         if($this->checkConnection($this->post['SID'],$this->post['PID'])){
             return self::returnActionResult($this->post);
         }
+        $this->createNewConnection($this->post['SID'],$this->post['PID']);
+        return self::returnActionResult($this->post);
+    }
+
+    public function Delete(){
+        $this->post=json_decode($this->post,1);
+        if(empty($this->post['SID']) || empty($this->post['PID'])){
+            return self::returnActionResult($this->post,false,"参数错误");
+        }
+        if($this->deleteConnection($this->post['SID'],$this->post['PID'])){
+            return self::returnActionResult();
+        }else{
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "删除对应关系失败"
+            );
+        }
+
     }
 
     public function deleteAllPID($sid){

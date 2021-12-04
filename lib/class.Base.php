@@ -6,7 +6,7 @@ class Base{
     protected $get;
     protected $post;
     public $pdo;
-    public function __construct($get=[],$post=[])
+    public function __construct($get=[],$post='')
     {
         $this->get=$get;
         $this->post=$post;
