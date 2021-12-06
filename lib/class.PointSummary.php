@@ -20,9 +20,18 @@ class PointSummary extends Base{
         }else{
             $pointSummary['file_content']="";
         }
+        $pointTagConnection=new PointTagConnection();
+        $tagIds=$pointTagConnection->getSummaryTagConnection($id);
+        if (!empty($tagIds)){
+            $sql=sprintf("select * from %s where ID in (%s) and Deleted=0;",PointTag::$table,implode(",",$tagIds));
+            $tags=$this->pdo->getRows($sql);
+        }else{
+            $tags=[];
+        }
         return self::returnActionResult(
             [
-                'PointSummary'=>$pointSummary
+                'PointSummary'=>$pointSummary,
+                'Tags'=>$tags
             ]
         );
     }
@@ -41,8 +50,15 @@ class PointSummary extends Base{
         if(!empty($this->post['file_content'])){
             file_put_contents(SummaryFilePath.DIRECTORY_SEPARATOR.$this->post['Title'].".md",$this->post['file_content']);
         }
-        $this->handleSql($this->post,0);
-
+        $data=$this->handleSql($this->post,0,'',true);
+        $pointTagConnection=new PointTagConnection();
+        if (!$pointTagConnection->updateConnection($data['Data']['ID'],$this->post['tag_ids'])){
+            return self::returnActionResult(
+                $this->post,
+                false,
+                "New Point Summary Error"
+            );
+        }
         return self::returnActionResult();
     }
 
@@ -52,6 +68,8 @@ class PointSummary extends Base{
             file_put_contents(SummaryFilePath.DIRECTORY_SEPARATOR.$this->post['Title'].".md",$this->post['file_content']);
         }
         $this->post['LastUpdateTime']=date("Y-m-d H:i:s");
+        $pointTagConnection=new PointTagConnection();
+        $pointTagConnection->updateConnection($this->post['ID'],$this->post['tag_ids']);
     }
 
 }

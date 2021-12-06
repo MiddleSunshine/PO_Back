@@ -34,6 +34,26 @@ class PointTagConnection extends Base{
         return self::returnActionResult();
     }
 
+    public function updateConnection($PSID,$tagsIds){
+        if (empty($PSID)){
+            return false;
+        }
+        if (empty($tagsIds)){
+            $this->clearConnection($PSID);
+            return true;
+        }
+        foreach ($tagsIds as $tagsId){
+            if (!$this->checkConnection($PSID,$tagsId) && !empty($tagsId)){
+                $this->createConnection($PSID,$tagsId);
+            }
+        }
+        return true;
+    }
+
+    public function clearConnection($PSID){
+        $sql=sprintf("delete from %s where PS_ID=%d;",static::$table,$PSID);
+        $this->pdo->query($sql);
+    }
 
     public function createConnection($PS_ID,$TID){
         if(empty($PS_ID) || empty($TID)){
