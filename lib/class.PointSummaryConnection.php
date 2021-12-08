@@ -3,6 +3,25 @@
 class PointSummaryConnection extends Base{
     public static $table="PS_Connection";
 
+    public function GetPoints(){
+        $summaryId=$this->get['ID'] ?? 0;
+        $returnData=[
+            'Points'=>[]
+        ];
+        if (empty($summaryId)){
+            return self::returnActionResult($returnData);
+        }
+        $sql=sprintf("select * from %s where SID=%d;",static::$table,$summaryId);
+        $pointIds=$this->pdo->getRows($sql,'PID');
+        if (empty($pointIds)){
+            return self::returnActionResult($returnData);
+        }
+        $pointIds=implode(",",array_keys($pointIds));
+        $sql=sprintf("select * from %s where ID in (%s)",Points::$table,$pointIds);
+        $returnData['Points']=$this->pdo->getRows($sql);
+        return self::returnActionResult($returnData);
+    }
+
     public function NewConnection(){
         $this->post=json_decode($this->post,1);
         if(empty($this->post['SID']) || empty($this->post['PID'])){

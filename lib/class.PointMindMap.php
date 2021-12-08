@@ -79,6 +79,7 @@ class PointMindMap extends Base {
             $table,
             $centerX-2,
             0,
+            false,
             $id
         );
         // put right data
