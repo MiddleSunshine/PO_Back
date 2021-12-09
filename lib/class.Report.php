@@ -65,6 +65,21 @@ class Report extends Base{
         $page=1;
         $pageSize=5000;
         $returnData=[];
+        $sql=sprintf(
+            "select sum(Point) as amount from %s where LastUpdateTime<'%s' and status in ('%s','%s');",
+            Points::$table,
+            $startTime,
+            Points::STATUS_SOLVED,
+            Points::STATUS_ARCHIVED
+        );
+        $basePointAmount=$this->pdo->getFirstRow($sql);
+        $sql=sprintf(
+            "select sum(Point) as amount from %s where LastUpdateTime<'%s' and status='%s'",
+            Willing::$table,
+            $startTime,
+            Willing::STATUS_EXCHANGED
+        );
+        $baseWillingAmount=$this->pdo->getFirstRow($sql);
         while ($page<100){
             $sql=sprintf(
                 "select LastUpdateTime,Point,status from %s where LastUpdateTime between '%s' and '%s' and Deleted=0 limit %d,%d",
@@ -86,8 +101,55 @@ class Report extends Base{
                 }
             }
         }
+        $sql=sprintf("select * from %s where status='%s'",Willing::$table,Willing::STATUS_EXCHANGED);
+        $willings=$this->pdo->getRows($sql);
+        $willingData=[];
+        foreach ($willings as $willing){
+            $date=date("m-d",strtotime($willing['LastUpdateTime']));
+            $willingData[$date]=$willing['Point'];
+        }
         $dateRange=self::getDateRange($startTime,$endTime,"m-d");
-        
+        $point=$willingAmount=$pointAmount=$exchangeAblePoint=[];
+        $amount=$basePointAmount['amount'] ?? 0;
+        $sumOfWilling=$baseWillingAmount['amount'] ?? 0;
+        foreach ($dateRange as $date){
+            $point[]=$returnData[$date] ?? 0;
+            $sumOfWilling+=$willingData[$date] ?? 0;
+            $willingAmount[]=$willingData[$date] ?? 0;
+            $amount+=$returnData[$date] ?? 0;
+            $pointAmount[]=$amount;
+            $exchangeAblePoint[]=$amount-$sumOfWilling;
+        }
+        return self::returnActionResult(
+            [
+                'point'=>[
+                    // [
+                    //     'data'=>$pointAmount,
+                    //     'name'=>'Point Amount',
+                    //     'type'=>'line'
+                    // ],
+                    [
+                        'data'=>$point,
+                        'name'=>'Point',
+                        'type'=>'line'
+                    ],
+                    [
+                        'data'=>$willingAmount,
+                        'name'=>'Willing',
+                        'type'=>'line'
+                    ],
+                    [
+                        'data'=>$exchangeAblePoint,
+                        'name'=>'Point Rest',
+                        'type'=>'line'
+                    ]
+                ],
+                'xData'=>$dateRange,
+                'StartTime'=>$startTime,
+                'EndTime'=>$endTime,
+                'post'=>$this->post
+            ]
+        );
     }
 
     public function GetPercent(){

@@ -14,7 +14,7 @@ define('TIME_ZONE','Asia/Shanghai');
 define("INDEX_FILE",dirname(__DIR__));
 define("MD_FILE_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."md".DIRECTORY_SEPARATOR);
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
-
+define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
 function __autoload($class){
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
     if (file_exists($fileName)){

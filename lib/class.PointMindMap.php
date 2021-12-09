@@ -78,7 +78,9 @@ class PointMindMap extends Base {
             $dataBaseData[0],
             $table,
             $centerX-2,
-            0
+            0,
+            false,
+            $id
         );
         // put right data
         $this->putDataBaseDataIntoTable(
@@ -86,10 +88,18 @@ class PointMindMap extends Base {
             $table,
             $centerX+2,
             0,
-            true
+            true,
+            $id
         );
         // put center data
-        $table[0][$centerX]=PointTable::getTable($this->point->getPointDetail($id));
+        $table[0][$centerX]=PointTable::getTable(
+            array_merge(
+                $this->point->getPointDetail($id),
+                [
+                    'PID'=>-1
+                ]
+            )
+        );
         // add the line
         $this->addTheLine($table);
         return self::returnActionResult(
@@ -141,16 +151,23 @@ class PointMindMap extends Base {
         }
     }
 
-    public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false){
+    public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false,$preId=0){
         $startY=$y;
         $hasData=false;
         $endY=$y;
         foreach ($data as $pid=>$subIds){
             $hasData=true;
             $endY=$y;
-            $table[$y][$x]=PointTable::getTable($this->point->getPointDetail($pid));
+            $table[$y][$x]=PointTable::getTable(
+                array_merge(
+                    $this->point->getPointDetail($pid),
+                    [
+                        'PID'=>$preId
+                    ]
+                )
+            );
             if (!empty($subIds)){
-                $y=$this->putDataBaseDataIntoTable($subIds,$table,$addX?($x+2):($x-2),$y,$addX);
+                $y=$this->putDataBaseDataIntoTable($subIds,$table,$addX?($x+2):($x-2),$y,$addX,$pid);
             }
             $y+=1;
         }

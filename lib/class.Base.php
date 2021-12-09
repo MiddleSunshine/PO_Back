@@ -1,12 +1,12 @@
 <?php
-require_once __DIR__.DIRECTORY_SEPARATOR."class.MySqlPdo.php";
+require_once __DIR__.DIRECTORY_SEPARATOR."class.MysqlPdo.php";
 
 class Base{
     public static $table='';
     protected $get;
     protected $post;
     public $pdo;
-    public function __construct($get=[],$post=[])
+    public function __construct($get=[],$post='')
     {
         $this->get=$get;
         $this->post=$post;
@@ -24,6 +24,29 @@ class Base{
         $data=$this->pdo->getRows($sql);
         self::addKey($data,'ID','key');
         return self::returnActionResult($data);
+    }
+
+    public function preSave(){
+
+    }
+
+    public function CommonSave(){
+        $this->post=json_decode($this->post,1);
+        if (empty($this->post['ID'])){
+            return self::returnActionResult($this->post,false,"Error Data");
+        }
+        $this->preSave();
+        return $this->handleSql($this->post,$this->post['ID']);
+    }
+
+    public function CommonDelete(){
+        $id=$this->get['ID'] ?? 0;
+        if ($id<=0){
+            return self::returnActionResult($this->get,false,"Wrong Param !");
+        }
+        $sql=sprintf("delete from %s where ID=%d",static::$table,$id);
+        $this->pdo->query($sql);
+        return self::returnActionResult();
     }
 
     public function Detail(){
@@ -56,7 +79,7 @@ class Base{
                     continue;
                 }
                 if ($value!==null){
-                    $sqlTemplate[]=sprintf("%s='%s'",$filed,$value);
+                    $sqlTemplate[]=sprintf("%s='%s'",$filed,addslashes($value));
                 }else{
                     $sqlTemplate[]=sprintf("%s=null",$filed);
                 }
@@ -75,13 +98,13 @@ class Base{
                 if ($value===null){
                     $sqlTemplate.="null,";
                 }else{
-                    $sqlTemplate.=sprintf("'%s',",$value);
+                    $sqlTemplate.=sprintf("'%s',",addslashes($value));
                 }
             }
             $sqlTemplate=substr($sqlTemplate,0,-1);
             // insert 之前已有的值，然后就会变成 update
             if (!empty($keyName)){
-                $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,$this->post[$keyName]);
+                $sqlSearch=sprintf("select {$keyName},ID from %s where {$keyName}='%s'",static::$table,addslashes($this->post[$keyName]));
                 $data=$this->pdo->getFirstRow($sqlSearch);
                 if (!empty($data)){
                     return $this->handleSql($sql,$data['ID'],$keyName);
@@ -103,7 +126,7 @@ class Base{
             $sql=sprintf("select ID from %s order by ID desc limit 1;",static::$table);
         }else{
             if (!empty($keyName)){
-                $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,$this->post[$keyName] ?? '');
+                $sql=sprintf("select ID from %s where {$keyName}='%s';",static::$table,addslashes($this->post[$keyName] ?? ''));
             }else{
                 $sql=null;
             }
