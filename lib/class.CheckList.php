@@ -2,7 +2,7 @@
 
 class CheckList extends Base
 {
-    public static $table = "CheckList";
+    public static $table = "check_list";
 
     const STATUS_ACTIVE = 'Active';
     const STATUS_INACTIVE = 'Inactive';
@@ -18,6 +18,7 @@ class CheckList extends Base
         $sql = sprintf("select * from %s", static::$table);
         // 排序数据
         $checkList = $this->pdo->getRows($sql, 'PID');
+        $checkList=$this->orderCheckList($checkList);
         foreach ($checkList as &$item) {
             if (isset($results[$item['ID']])) {
                 $item['Result'] = $results[$item['ID']];
@@ -46,15 +47,15 @@ class CheckList extends Base
                 $this->post['Status'] = self::STATUS_ACTIVE;
                 break;
         }
-        $this->post['AddTime'] = date("Y-m-d H:i:s");
-        $data = $this->handleSql($this->post, 0, '', true);
         if (!empty($this->post['PID'])) {
             $sql = sprintf("select * from %s where PID=%d", static::$table, $this->post['PID']);
             $historyCheckList = $this->pdo->getFirstRow($sql);
-            if (!empty($historyCheckList)) {
-                $historyCheckList['PID'] = $data['Data']['ID'];
-                $this->handleSql($historyCheckList, $historyCheckList['ID']);
-            }
+        }
+        $this->post['AddTime'] = date("Y-m-d H:i:s");
+        $data = $this->handleSql($this->post, 0, '', true);
+        if (!empty($historyCheckList)) {
+            $historyCheckList['PID'] = $data['Data']['ID'];
+            $this->handleSql($historyCheckList, $historyCheckList['ID']);
         }
         return self::returnActionResult(
             $this->post
