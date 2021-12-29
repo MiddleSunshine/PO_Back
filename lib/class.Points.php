@@ -11,8 +11,8 @@ class Points extends Base{
     const STATUS_GIVE_UP='give_up';
     const STATUS_ARCHIVED='archived';
 
-    const SEARCHABLE_YES='Yes';
-    const SEARCHABLE_NO='No';
+    const SEARCHABLE_POINT='Point';
+    const SEARCHABLE_TITLE='Title';
 
     public static $statusMap=[
         self::STATUS_NEW=>0,
@@ -191,9 +191,9 @@ class Points extends Base{
 
     public function getPointDetail($pid,$staus=''){
         if ($staus){
-            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file from %s where ID=%d and status in (%s) and Deleted=0",static::$table,$pid,$staus);
+            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and status in (%s) and Deleted=0",static::$table,$pid,$staus);
         }else{
-            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file from %s where ID=%d and Deleted=0;",static::$table,$pid);
+            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and Deleted=0;",static::$table,$pid);
         }
         return $this->pdo->getFirstRow($sql);
     }
