@@ -8,7 +8,7 @@ class CheckResult extends Base
     public function getHistoryCheck($timeLimit=7){
         $returnData=[];
         for ($startDay=0;$startDay<$timeLimit;$startDay++){
-            list($year,$month,$day)=explode("_",date("Y_n_j",strtotime("-".$timeLimit." day")));
+            list($year,$month,$day)=explode("_",date("Y_n_j",strtotime("-".$startDay." day")));
             $historyData=$this->getCheckResultByDate($year,$month,$day);
             foreach ($historyData as $ListId=>$result){
                 !isset($returnData[$ListId]) && $returnData[$ListId]=[];

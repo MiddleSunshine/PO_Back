@@ -8,7 +8,7 @@ class CheckList extends Base
     const STATUS_INACTIVE = 'Inactive';
 
     public function HistoryData(){
-        $history=$this->get['History'] ?? 7;
+        $history=empty($this->get['History'])?7:$this->get['History'];
         $checkResult = new CheckResult();
         $results=$checkResult->getHistoryCheck($history);
         $sql = sprintf("select * from %s;", static::$table);
