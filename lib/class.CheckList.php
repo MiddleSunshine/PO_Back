@@ -7,6 +7,30 @@ class CheckList extends Base
     const STATUS_ACTIVE = 'Active';
     const STATUS_INACTIVE = 'Inactive';
 
+    public function HistoryData(){
+        $history=$this->get['History'] ?? 7;
+        $checkResult = new CheckResult();
+        $results=$checkResult->getHistoryCheck($history);
+        $sql = sprintf("select * from %s;", static::$table);
+        // 排序数据
+        $checkList = $this->pdo->getRows($sql, 'PID');
+        $checkList=$this->orderCheckList($checkList);
+        foreach ($checkList as &$item) {
+            if (isset($results[$item['ID']])) {
+                $item['Result'] = $results[$item['ID']];
+            }else{
+                $item['Result']=[];
+            }
+        }
+
+        return self::returnActionResult(
+            [
+                'List'=>array_values($checkList),
+                'Result'=>$results
+            ]
+        );
+    }
+
     public function List()
     {
         $Year = empty($this->get['Year']) ? date("Y") : $this->get['Year'];
