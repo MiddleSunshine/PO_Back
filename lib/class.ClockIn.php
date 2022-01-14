@@ -8,7 +8,7 @@ class ClockIn extends Base{
             "select * from %s where Year='%s' and Month='%s';",
             self::$table,
             date("Y"),
-            date("m")
+            date("n")
         );
         $records=$this->pdo->getRows($sql);
         $amount=0;
