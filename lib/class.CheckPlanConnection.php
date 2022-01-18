@@ -43,7 +43,8 @@ class CheckPlanConnection extends Base
             return self::returnActionResult($this->post, false, "Error Data");
         }
         $sql = sprintf("delete from %s where PID=%d and CID=%d;", static::$table, $this->post['PID'], $this->post['CID']);
-        
+        $this->pdo->query($sql);
+        return self::returnActionResult($this->post, !$this->checkConnectionExists($this->post['PID'], $this->post['CID']));
     }
 
 

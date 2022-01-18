@@ -5,20 +5,21 @@ class CheckResult extends Base
 {
     public static $table = "check_result";
 
-    public function getHistoryCheck($timeLimit=7){
-        $returnData=[];
-        for ($startDay=0;$startDay<$timeLimit;$startDay++){
-            list($year,$month,$day)=explode("_",date("Y_n_j",strtotime("-".$startDay." day")));
-            $historyData=$this->getCheckResultByDate($year,$month,$day);
-            foreach ($historyData as $ListId=>$result){
-                !isset($returnData[$ListId]) && $returnData[$ListId]=[];
-                $returnData[$ListId][]=$result;
+    public function getHistoryCheck($timeLimit = 7)
+    {
+        $returnData = [];
+        for ($startDay = 0; $startDay < $timeLimit; $startDay++) {
+            list($year, $month, $day) = explode("_", date("Y_n_j", strtotime("-" . $startDay . " day")));
+            $historyData = $this->getCheckResultByDate($year, $month, $day);
+            foreach ($historyData as $ListId => $result) {
+                !isset($returnData[$ListId]) && $returnData[$ListId] = [];
+                $returnData[$ListId][] = $result;
             }
         }
         return $returnData;
     }
 
-    public function getCheckResultByDate($year, $month, $day, $hour=0)
+    public function getCheckResultByDate($year, $month, $day, $hour = 0)
     {
         $where = [];
         if (!empty($year)) {
