@@ -27,6 +27,32 @@ class PlanItem extends Base
         );
     }
 
+    public function GetPercent()
+    {
+        $page = 0;
+        $pageSize = 1000;
+        $count = [];
+        while ($page < 1000) {
+            $page++;
+            $sql = sprintf("select PID,FinishTime from %s order by ID asc limit %d,%d", static::$table, ($page - 1) * $pageSize, $pageSize);
+            $planItems = $this->pdo->getRows($sql);
+            if (empty($planItems)) {
+                break;
+            }
+            foreach ($planItems as $item) {
+                !isset($count[$item['PID']]) && $count[$item['PID']] = ['Finish' => 0, 'Unfinish' => 0];
+                if (!empty($item['FinishTime'])) {
+                    $count[$item['PID']]['Finish']++;
+                } else {
+                    $count[$item['PID']]['Unfinish']++;
+                }
+            }
+        }
+        return self::returnActionResult([
+            'Count' => $count
+        ]);
+    }
+
     public function Save()
     {
         $this->post = json_decode($this->post, 1);
