@@ -2,7 +2,7 @@
 
 class CheckPlanConnection extends Base
 {
-    public static $table = "Plan_Item";
+    public static $table = "Check_Plan_Connection";
 
     public function NewConnection()
     {
