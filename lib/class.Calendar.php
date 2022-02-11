@@ -7,7 +7,7 @@ class Calendar extends Base{
         $returnData=[];
         $startTimeStamp=strtotime($startDate);
         $endTimestamp=strtotime($endDate);
-        $preDay=date("N",$startTimeStamp);
+        $preDay=date("N",$startTimeStamp)-1;
         // 设置开始时间
         $startTimeStamp-=$preDay*24*60*60;
         // 设置结束时间
