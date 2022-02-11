@@ -11,7 +11,7 @@ class Calendar extends Base{
         // 设置开始时间
         $startTimeStamp-=$preDay*24*60*60;
         // 设置结束时间
-        $finalDay=7-date("N",$endTimestamp);
+        $finalDay=7-date("N",$endTimestamp)+1;
         $endTimestamp+=$finalDay*24*60*60;
         $index=0;
         $isSeven=0;
