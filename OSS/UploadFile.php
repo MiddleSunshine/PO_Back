@@ -11,11 +11,11 @@ class UploadFile{
         $this->oss=new OssClient(ACCESS_KEY_ID,ACCESS_KEY_SECRET,END_POINT);
     }
 
-    public function Upload($filePath,$fileName){
+    public function Upload($bucket,$filePath,$fileName){
         $uploadResult=$this->oss->uploadFile(
-            BUCKET,
-            $filePath,
-            $fileName
+            $bucket,
+            $fileName,
+            $filePath
         );
         return $uploadResult['oss-request-url'] ?? "";
     }

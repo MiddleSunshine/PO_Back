@@ -1,14 +1,16 @@
 <?php
+header("Access-Control-Allow-Origin: *");
 require_once __DIR__.DIRECTORY_SEPARATOR."UploadFile.php";
 
 $method=$_GET['method'] ?? "";
 
 switch ($method){
     case "Upload":
+        $bucket=$_GET['bucket'] ?? LONG_STORE_BUCKET;
         $uploadFile=new UploadFile();
         $fileInfo=current($_FILES);
         try {
-            $url=$uploadFile->Upload($fileInfo['tmp_name'],time()."_".$fileInfo['name']);
+            $url=$uploadFile->Upload($bucket,$fileInfo['tmp_name'],time()."_".$fileInfo['name']);
             echo CommonReturn(true,"Success",['Url'=>$url]);
         }catch (Exception $e){
             echo CommonReturn(false,"Exception",[$e->getMessage(),$e->getFile(),$e->getLine()]);
