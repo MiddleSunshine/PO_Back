@@ -56,7 +56,7 @@ CREATE TABLE `Plans` (
 ```
 
 ```sql
-CREATE TABLE `Plan_Item` (
+CREATE TABLE `Plan_Item2` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
   `AddTime` datetime DEFAULT NULL,
