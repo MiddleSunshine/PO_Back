@@ -57,6 +57,37 @@ class Points extends Base{
         return self::returnActionResult($returnData);
     }
 
+    public function ReviewPoint(){
+        $startTime=$this->get['StartTime'] ?? '';
+        $endTime=$this->get['EndTime'] ?? date("Y-m-d");
+        $indexPID=$this->get['PID'] ?? '';
+        if (empty($startTime) || empty($indexPID)){
+            return self::returnActionResult(
+                $this->get,
+                false,
+                "Wrong Param"
+            );
+        }
+        $pointMindMap=new PointMindMap();
+        $connectionPoint=[];
+        $pointMindMap->getAllParentPointID($indexPID,$connectionPoint);
+        $pointMindMap->getAllSubPointID($indexPID,$connectionPoint);
+        $sql=sprintf("select * from %s where LastUpdateTime between '%s 00:00:00' and '%s 23:59:59' order by LastUpdateTime;",self::$table,$startTime,$endTime);
+        $points=$this->pdo->getRows($sql,'ID');
+        foreach ($points as $Id=>&$point){
+            if (!isset($connectionPoint[$Id])){
+                unset($points[$Id]);
+            }
+            $point['FileContent']="";
+            !empty($point['file']) && $point['FileContent']=File::getFileContent($Id,$point['file']);
+        }
+        return self::returnActionResult(
+            [
+                'Points'=>array_values($points)
+            ]
+        );
+    }
+
     public function Search(){
         $this->post=json_decode($this->post,1);
         if (empty($this->post['keyword'])){
