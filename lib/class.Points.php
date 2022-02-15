@@ -60,6 +60,7 @@ class Points extends Base{
     public function ReviewPoint(){
         $startTime=$this->get['StartTime'] ?? '';
         $endTime=$this->get['EndTime'] ?? date("Y-m-d");
+        empty($endTime) && $endTime=date("Y-m-d");
         $indexPID=$this->get['PID'] ?? '';
         if (empty($startTime) || empty($indexPID)){
             return self::returnActionResult(
