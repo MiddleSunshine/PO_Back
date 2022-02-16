@@ -59,12 +59,12 @@ class PointsConnection extends Base{
     public function deleteConnection($PID,$subPID,$updatePoint=true){
         $sql=sprintf("delete from %s where PID=%d and SubPID=%d;",static::$table,$PID,$subPID);
         $this->pdo->query($sql);
-        $sql=sprintf("select * from %s where SubPID=%d;",static::$table,$subPID);
-        $connection=$this->pdo->getFirstRow($sql);
-        if (empty($connection) && $updatePoint){
-            $sql=sprintf("update %s set status='%s' where ID=%d",Points::$table,Points::STATUS_INIT,$subPID);
-            $this->pdo->query($sql);
-        }
+//        $sql=sprintf("select * from %s where SubPID=%d;",static::$table,$subPID);
+//        $connection=$this->pdo->getFirstRow($sql);
+//        if (empty($connection) && $updatePoint){
+//            $sql=sprintf("update %s set status='%s' where ID=%d",Points::$table,Points::STATUS_INIT,$subPID);
+//            $this->pdo->query($sql);
+//        }
     }
 
     public function getSubParentId($pid){

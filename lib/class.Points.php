@@ -11,8 +11,8 @@ class Points extends Base{
     const STATUS_GIVE_UP='give_up';
     const STATUS_ARCHIVED='archived';
 
-    const SEARCHABLE_YES='Yes';
-    const SEARCHABLE_NO='No';
+    const SEARCHABLE_POINT='Point';
+    const SEARCHABLE_TITLE='Title';
 
     public static $statusMap=[
         self::STATUS_NEW=>0,
@@ -55,6 +55,38 @@ class Points extends Base{
             }
         }
         return self::returnActionResult($returnData);
+    }
+
+    public function ReviewPoint(){
+        $startTime=$this->get['StartTime'] ?? '';
+        $endTime=$this->get['EndTime'] ?? date("Y-m-d");
+        empty($endTime) && $endTime=date("Y-m-d");
+        $indexPID=$this->get['PID'] ?? '';
+        if (empty($startTime) || empty($indexPID)){
+            return self::returnActionResult(
+                $this->get,
+                false,
+                "Wrong Param"
+            );
+        }
+        $pointMindMap=new PointMindMap();
+        $connectionPoint=[];
+        $pointMindMap->getAllParentPointID($indexPID,$connectionPoint);
+        $pointMindMap->getAllSubPointID($indexPID,$connectionPoint);
+        $sql=sprintf("select * from %s where LastUpdateTime between '%s 00:00:00' and '%s 23:59:59' order by LastUpdateTime;",self::$table,$startTime,$endTime);
+        $points=$this->pdo->getRows($sql,'ID');
+        foreach ($points as $Id=>&$point){
+            if (!isset($connectionPoint[$Id])){
+                unset($points[$Id]);
+            }
+            $point['FileContent']="";
+            !empty($point['file']) && $point['FileContent']=File::getFileContent($Id,$point['file']);
+        }
+        return self::returnActionResult(
+            [
+                'Points'=>array_values($points)
+            ]
+        );
     }
 
     public function Search(){
@@ -191,9 +223,9 @@ class Points extends Base{
 
     public function getPointDetail($pid,$staus=''){
         if ($staus){
-            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file from %s where ID=%d and status in (%s) and Deleted=0",static::$table,$pid,$staus);
+            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and status in (%s) and Deleted=0",static::$table,$pid,$staus);
         }else{
-            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file from %s where ID=%d and Deleted=0;",static::$table,$pid);
+            $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and Deleted=0;",static::$table,$pid);
         }
         return $this->pdo->getFirstRow($sql);
     }

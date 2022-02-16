@@ -110,6 +110,24 @@ class PointMindMap extends Base {
         );
     }
 
+    public function TreeMode(){
+        $pid=$this->get['PID'] ?? "";
+        $returnData=[
+            'Tree'=>[]
+        ];
+        if (empty($pid)){
+            return self::returnActionResult($returnData);
+        }
+        $subPoints=[];
+        $this->getAllSubPointID($pid,$subPoints);
+        $json=$this->createTree($subPoints);
+        return self::returnActionResult(
+            [
+                'Data'=>$json
+            ]
+        );
+    }
+
     public function addTheLine(&$table){
         foreach ($table as $outsideIndex=>$lines){
             foreach ($lines as $insideIndex=>$item){
@@ -152,10 +170,15 @@ class PointMindMap extends Base {
     }
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false,$preId=0){
+        static $endlessPrevent;
         $startY=$y;
         $hasData=false;
         $endY=$y;
         foreach ($data as $pid=>$subIds){
+            if (isset($endlessPrevent[$pid])){
+                continue;
+            }
+            $endlessPrevent[$pid]=1;
             $hasData=true;
             $endY=$y;
             $table[$y][$x]=PointTable::getTable(
@@ -204,6 +227,11 @@ class PointMindMap extends Base {
     }
 
     public function getAllSubPointID($pid,&$returnData,$deep=0){
+        // static $endlessPrevent;
+        // if (isset($endlessPrevent[$pid])){
+        //     return true;
+        // }
+        // $endlessPrevent[$pid]=1;
         // subPids
         $subPids=$this->pointsConnection->getSubParentId($pid);
         if (empty($subPids)){
@@ -220,6 +248,11 @@ class PointMindMap extends Base {
     }
 
     public function getAllParentPointID($subId,&$returnData,$deep=0){
+        // static $endlessPrevent;
+        // if (isset($endlessPrevent[$subId])){
+        //     return true;
+        // }
+        // $endlessPrevent[$subId]=1;
         // parent id
         $parentIds=$this->pointsConnection->getParentId($subId);
         if (empty($parentIds)){
@@ -237,5 +270,21 @@ class PointMindMap extends Base {
             $this->getAllParentPointID($parentId,$returnData[$parentId],$deep);
         }
         return true;
+    }
+
+    public function createTree($data){
+        $returnData=[];
+        $index=0;
+        foreach ($data as $pid=>$subPIDs){
+            $point=$this->point->getPointDetail($pid);
+            $returnData[$index]=[
+                'title'=>$point['keyword'],
+                'value'=>$point['ID'],
+                'key'=>$point['ID'],
+                'children'=>$this->createTree($subPIDs)
+            ];
+            $index++;
+        }
+        return $returnData;
     }
 }

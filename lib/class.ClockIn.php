@@ -8,10 +8,11 @@ class ClockIn extends Base{
             "select * from %s where Year='%s' and Month='%s';",
             self::$table,
             date("Y"),
-            date("m")
+            date("n")
         );
         $records=$this->pdo->getRows($sql);
         $amount=0;
+        $list=[];
         foreach ($records as &$record){
             if (!empty($record['working_hours']) && !empty($record['off_work_time'])){
                 $record['Result']=round(
@@ -26,10 +27,11 @@ class ClockIn extends Base{
                 10,
                 ' '
             );
+            $list[$record['Month']."-".$record['Day']]=$record;
         }
         return self::returnActionResult(
             [
-                'List'=>$records,
+                'List'=>$list,
                 'Amount'=>round($amount,2)
             ]
         );
