@@ -152,10 +152,15 @@ class PointMindMap extends Base {
     }
 
     public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false,$preId=0){
+        static $endlessPrevent;
         $startY=$y;
         $hasData=false;
         $endY=$y;
         foreach ($data as $pid=>$subIds){
+            if (isset($endlessPrevent[$pid])){
+                continue;
+            }
+            $endlessPrevent[$pid]=1;
             $hasData=true;
             $endY=$y;
             $table[$y][$x]=PointTable::getTable(
