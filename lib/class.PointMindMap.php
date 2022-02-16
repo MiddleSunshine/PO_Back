@@ -110,6 +110,24 @@ class PointMindMap extends Base {
         );
     }
 
+    public function TreeMode(){
+        $pid=$this->get['PID'] ?? "";
+        $returnData=[
+            'Tree'=>[]
+        ];
+        if (empty($pid)){
+            return self::returnActionResult($returnData);
+        }
+        $subPoints=[];
+        $this->getAllSubPointID($pid,$subPoints);
+        $json=$this->createTree($subPoints);
+        return self::returnActionResult(
+            [
+                'Data'=>$json
+            ]
+        );
+    }
+
     public function addTheLine(&$table){
         foreach ($table as $outsideIndex=>$lines){
             foreach ($lines as $insideIndex=>$item){
@@ -252,5 +270,20 @@ class PointMindMap extends Base {
             $this->getAllParentPointID($parentId,$returnData[$parentId],$deep);
         }
         return true;
+    }
+
+    public function createTree($data){
+        $returnData=[];
+        $index=0;
+        foreach ($data as $pid=>$subPIDs){
+            $point=$this->point->getPointDetail($pid);
+            $returnData[$index]=[
+                'title'=>$point['keyword'],
+                'value'=>$point['ID'],
+                'children'=>$this->createTree($subPIDs)
+            ];
+            $index++;
+        }
+        return $returnData;
     }
 }
