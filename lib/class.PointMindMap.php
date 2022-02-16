@@ -83,14 +83,14 @@ class PointMindMap extends Base {
             $id
         );
         // put right data
-        $this->putDataBaseDataIntoTable(
-            $dataBaseData[1],
-            $table,
-            $centerX+2,
-            0,
-            true,
-            $id
-        );
+        // $this->putDataBaseDataIntoTable(
+        //     $dataBaseData[1],
+        //     $table,
+        //     $centerX+2,
+        //     0,
+        //     true,
+        //     $id
+        // );
         // put center data
         $table[0][$centerX]=PointTable::getTable(
             array_merge(
@@ -227,11 +227,11 @@ class PointMindMap extends Base {
     }
 
     public function getAllSubPointID($pid,&$returnData,$deep=0){
-        // static $endlessPrevent;
-        // if (isset($endlessPrevent[$pid])){
-        //     return true;
-        // }
-        // $endlessPrevent[$pid]=1;
+        static $endlessPrevent;
+        if (isset($endlessPrevent[$pid])){
+            return true;
+        }
+        $endlessPrevent[$pid]=1;
         // subPids
         $subPids=$this->pointsConnection->getSubParentId($pid);
         if (empty($subPids)){
@@ -248,11 +248,11 @@ class PointMindMap extends Base {
     }
 
     public function getAllParentPointID($subId,&$returnData,$deep=0){
-        // static $endlessPrevent;
-        // if (isset($endlessPrevent[$subId])){
-        //     return true;
-        // }
-        // $endlessPrevent[$subId]=1;
+        static $endlessPrevent;
+        if (isset($endlessPrevent[$subId])){
+            return true;
+        }
+        $endlessPrevent[$subId]=1;
         // parent id
         $parentIds=$this->pointsConnection->getParentId($subId);
         if (empty($parentIds)){
