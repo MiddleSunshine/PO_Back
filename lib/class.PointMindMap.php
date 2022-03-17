@@ -112,6 +112,7 @@ class PointMindMap extends Base {
 
     public function TreeMode(){
         $pid=$this->get['PID'] ?? "";
+        $mode=$this->get['mode'] ?? "content";
         $returnData=[
             'Tree'=>[]
         ];
@@ -120,7 +121,7 @@ class PointMindMap extends Base {
         }
         $subPoints=[];
         $this->getAllSubPointID($pid,$subPoints);
-        $json=$this->createTree($subPoints);
+        $json=$this->createTree($subPoints,$mode);
         return self::returnActionResult(
             [
                 'Data'=>$json
@@ -272,16 +273,29 @@ class PointMindMap extends Base {
         return true;
     }
 
-    public function createTree($data){
+    public function createTree($data,$mode){
         $returnData=[];
         $index=0;
         foreach ($data as $pid=>$subPIDs){
             $point=$this->point->getPointDetail($pid);
+            $title=$point['keyword'];
+            switch ($mode){
+                case "content":
+                    if(!empty($point['note'])){
+                        $title.=" /N";
+                    }
+                    if(!empty($point['file'])){
+                        $title.=" /F";
+                    }
+                case "status":
+                    $title.=" (".$point['status'].")";
+            }
+
             $returnData[$index]=[
-                'title'=>$point['keyword'],
+                'title'=>$title,
                 'value'=>$point['ID'],
                 'key'=>$point['ID'],
-                'children'=>$this->createTree($subPIDs)
+                'children'=>$this->createTree($subPIDs,$mode)
             ];
             $index++;
         }
