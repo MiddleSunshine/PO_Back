@@ -287,6 +287,7 @@ class PointMindMap extends Base {
                     if(!empty($point['file'])){
                         $title.=" /F";
                     }
+                    break;
                 case "status":
                     $title.=" (".$point['status'].")";
             }
