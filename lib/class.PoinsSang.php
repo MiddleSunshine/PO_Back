@@ -19,61 +19,59 @@ class PoinsSang extends Base{
     }
 
     public function buildEChartData(&$returnData,&$connection){
-        $sql=sprintf("select ID,keyword,status,Deleted from %s where ID in (%s)",Points::$table,implode(",",$this->allPIDs));
+        $sql=sprintf("select ID,keyword,status,Point,Deleted from %s where ID in (%s)",Points::$table,implode(",",array_keys($this->allPIDs)));
         $points=$this->pdo->getRows($sql,'ID');
         $singlePID=[];
         foreach ($connection as $PID=>$subPIDs){
             foreach ($subPIDs as $subPID){
+                if ($points[$subPID]['Deleted']==1){
+                    continue;
+                }
                 $source=$points[$PID]['keyword'] ?? '';
                 $target=$points[$subPID]['keyword'] ?? '';
                 $returnData['links'][]=[
                     'source'=>$source,
                     'target'=>$target,
-                    'value'=>$points[$subPID]['status']." / ".$points[$subPID]['Deleted']
+                    'value'=>10
                 ];
-                if (!isset($singlePID[$subPID])){
-                    /**
-                    new: "#32D74B",
-                    solved: "#1AA9FF",
-                    give_up: "#FF453A",
-                    archived: "#FF9F0A",
-                    init: "#BF5AF2",
-                     */
-                    $subPoint=$points[$subPID];
-                    switch ($subPoint['status']){
-                        case "new":
-                            $color='#32D74B';
-                            break;
-                        case "solved":
-                            $color="#1AA9FF";
-                            break;
-                        case "give_up":
-                            $color="#FF453A";
-                            break;
-                        case "archived":
-                            $color='#FF9F0A';
-                            break;
-                        case 'init':
-                            $color='BF5AF2';
-                            break;
-                        default:
-                            $color='red';
-                            break;
+                foreach ([$subPID,$PID] as $ID){
+                    if (!isset($singlePID[$ID])){
+                        $subPoint=$points[$ID];
+                        switch ($subPoint['status']){
+                            case "new":
+                                $color='#32D74B';
+                                break;
+                            case "solved":
+                                $color="#1AA9FF";
+                                break;
+                            case "give_up":
+                                $color="#FF453A";
+                                break;
+                            case "archived":
+                                $color='#FF9F0A';
+                                break;
+                            case 'init':
+                                $color='#BF5AF2';
+                                break;
+                            default:
+                                $color='red';
+                                break;
+                        }
+                        $returnData['nodes'][]=[
+                            'name'=>$subPoint['keyword'],
+                            'itemStyle'=>[
+                                'color'=>$color,
+                                'borderColor'=>$color
+                            ]
+                        ];
+                        $singlePID[$ID]=1;
                     }
-                    $returnData['nodes'][]=[
-                        'name'=>$subPoint['keyword'],
-                        'itemStyle'=>[
-                            'color'=>$color,
-                            'borderColor'=>$color
-                        ]
-                    ];
-                    $singlePID[$subPID]=1;
                 }
             }
         }
     }
 
-    public function getConnection($PID,&$returnData){
+    public function getConnection($PID,&$returnData,$recordThisPID=false){
         static $pointConnection;
         !$pointConnection && $pointConnection=new PointsConnection();
         if (isset($this->allPIDs[$PID])){
@@ -81,10 +79,10 @@ class PoinsSang extends Base{
         }
         $this->allPIDs[$PID]=1;
         $subPIDs=$pointConnection->getSubParentId($PID);
-        $returnData[$PID]=$subPIDs;
+        $recordThisPID && $returnData[$PID]=$subPIDs;
         foreach ($subPIDs as $subPID){
+            $this->getConnection($subPID,$returnData,true);
             $this->allPIDs[$subPID]=1;
-            $this->getConnection($subPID,$returnData);
         }
     }
 }
