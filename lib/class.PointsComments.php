@@ -14,13 +14,15 @@ class PointsComments extends Base{
         return self::returnActionResult($this->post);
     }
 
-    public function getLastComment(){
-        $limit=$this->get['limit'] ?? 1000;
+    public function GetLastComment(){
+        $limit=$this->get['limit'] ?? 20;
         $sql=sprintf("select * from %s order by ID desc limit %d",static::$table,$limit);
         $comments=$this->pdo->getRows($sql);
         $PIDs=array_unique(array_column($comments,'PID'));
-        $sql=sprintf("select ID,keyword from %s where ID in (%s)",Points::$table,implode(",",$PIDs));
-        $points=$this->pdo->getRows($sql,'ID');
+        if (!empty($PIDs)){
+            $sql=sprintf("select ID,keyword,status from %s where ID in (%s)",Points::$table,implode(",",$PIDs));
+            $points=$this->pdo->getRows($sql,'ID');
+        }
         foreach ($comments as &$comment){
             $comment['Point']=$points[$comment['PID']];
         }
