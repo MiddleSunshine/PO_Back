@@ -3,6 +3,8 @@
 class Actions extends Base{
     public static $table='Actions';
 
+    const QUICK_INPUT='quick_input';
+
     public function NewAction(){
         $this->post=json_decode($this->post,1);
         if (empty($this->post['Title'])){
@@ -15,7 +17,8 @@ class Actions extends Base{
 
     public function List()
     {
-        $startTime=$this->get['StartTime'] ?? date("Y-m-d 00:00:00");
+        $startTime=$this->get['StartTime'] ?? '';
+        empty($startTime) && $startTime=date("Y-m-d 00:00:00");
         $sql=sprintf("select * from %s where AddTime>'%s' order by AddTime desc;",static::$table,$startTime);
         $actions=$this->pdo->getRows($sql);
         for ($i=1;$i<count($actions);$i++){
@@ -32,7 +35,7 @@ class Actions extends Base{
     }
 
     public function DistinctActions(){
-        $sql=sprintf("select distinct Title from %s;",static::$table);
+        $sql=sprintf("select distinct Title from %s where QuickInput='%s';",static::$table,self::QUICK_INPUT);
         return self::returnActionResult(
             [
                 'Actions'=>$this->pdo->getRows($sql)
