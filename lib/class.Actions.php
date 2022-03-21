@@ -18,18 +18,37 @@ class Actions extends Base{
     public function List()
     {
         $startTime=$this->get['StartTime'] ?? '';
-        empty($startTime) && $startTime=date("Y-m-d 00:00:00");
-        $sql=sprintf("select * from %s where AddTime>'%s' order by AddTime desc;",static::$table,$startTime);
-        $actions=$this->pdo->getRows($sql);
-        for ($i=1;$i<count($actions);$i++){
-            $seconds=strtotime($actions[$i-1]['AddTime'])-strtotime($actions[$i]['AddTime']);
-            $seconds=round($seconds/60,2);
-            $actions[$i]['Result']=$seconds." ".($seconds>1?"mins":"min");
-        }
-        isset($actions[0]) && $actions[0]['Result']='';
+        $endTime=$this->get['EndTime'] ?? '';
         return self::returnActionResult(
             [
-                'Actions'=>$actions
+                'Actions'=>$this->getActions($startTime,$endTime)
+            ]
+        );
+    }
+
+    public function ActionSummary(){
+        $startTime=$this->get['StartTime'] ?? "";
+        $endTime=$this->get['EndTime'] ?? '';
+        $actions=$this->getActions($startTime,$endTime);
+        $summary=[];
+        foreach ($actions as $action){
+            !isset($summary[$action['Title']]) && $summary[$action['Title']]=0;
+            $summary[$action['Title']]+=$action['Result'];
+        }
+        natsort($summary);
+        $returnData=[];
+        $amount=0;
+        foreach ($summary as $title=>$result){
+            $amount+=$result;
+            $returnData[]=[
+                'Title'=>$title,
+                'Result'=>$result
+            ];
+        }
+        return self::returnActionResult(
+            [
+                'Summary'=>$returnData,
+                'Amount'=>$amount
             ]
         );
     }
@@ -41,5 +60,22 @@ class Actions extends Base{
                 'Actions'=>$this->pdo->getRows($sql)
             ]
         );
+    }
+
+    public function getActions($startTime,$endTime){
+        empty($startTime) && $startTime=date("Y-m-d 00:00:00");
+        empty($endTime) && $endTime=date("Y-m-d 23:59:59");
+        $sql=sprintf("select * from %s where AddTime between '%s' and '%s' order by AddTime desc;",static::$table,$startTime,$endTime);
+        $actions=$this->pdo->getRows($sql);
+        if (empty($actions)){
+            return $actions;
+        }
+        for ($i=1;$i<count($actions);$i++){
+            $seconds=strtotime($actions[$i-1]['AddTime'])-strtotime($actions[$i]['AddTime']);
+            $seconds=round($seconds/60,2);
+            $actions[$i]['Result']=$seconds;
+        }
+        isset($actions[0]) && $actions[0]['Result']=0;
+        return $actions;
     }
 }
