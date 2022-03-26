@@ -1,61 +1,13 @@
 <?php
-abstract class TablePart{
-    abstract public static function getTableType();
-    abstract protected static function getTableData($data=[]);
-    public static function getTable($data=[]){
-        return [
-            'Type'=>static::getTableType(),
-            'Data'=>static::getTableData($data)
-        ];
-    }
-}
-
-class EmptyTable extends TablePart{
-    protected static function getTableData($data=[])
-    {
-        return '0,0,0,0';
-    }
-
-    public static function getTableType()
-    {
-        return "Empty";
-    }
-}
-
-class PointTable extends TablePart{
-    public static function getTableType()
-    {
-        return 'Point';
-    }
-
-    protected static function getTableData($data = [])
-    {
-        return $data;
-    }
-}
-
-class Plus extends TablePart{
-    public static function getTableType()
-    {
-        return "Plus";
-    }
-
-    protected static function getTableData($data = [])
-    {
-        return implode(",",$data);
-    }
-}
-
 class PointMindMap extends Base {
     public $pointsConnection;
     public $point;
 
-    public $maxParentDeep=[];
+    public $parentPoints=[];
+    public $parentPointsConnection=[];
     public $maxSubDeep=[];
     public $SubPointsAmount=0;
     public $ParentPointsAmount=0;
-
-    public $yData=[];
 
     public function __construct($get = [], $post = [])
     {
@@ -70,42 +22,26 @@ class PointMindMap extends Base {
         if ($id<0){
             return self::returnActionResult($this->get,false,"Wrong Param");
         }
-        $dataBaseData=$this->getAllDataFromDataBase($id);
-        $table=$this->createEmptyTable();
-        $centerX=count($this->maxParentDeep)*2+2;
-        // put left data
-        $this->putDataBaseDataIntoTable(
-            $dataBaseData[0],
-            $table,
-            $centerX-2,
-            0,
-            false,
-            $id
-        );
-        // put right data
-        // $this->putDataBaseDataIntoTable(
-        //     $dataBaseData[1],
-        //     $table,
-        //     $centerX+2,
-        //     0,
-        //     true,
-        //     $id
-        // );
-        // put center data
-        $table[0][$centerX]=PointTable::getTable(
-            array_merge(
-                $this->point->getPointDetail($id),
-                [
-                    'PID'=>-1
-                ]
-            )
-        );
-        // add the line
-        $this->addTheLine($table);
+        $parentPoints=[];
+        $this->getAllParentPointID($id,$parentPoints);
+        unset($parentPoints);
+        $returnData=[];
+        $pointCommentInstance=new PointsComments();
+        $outsideIndex=0;
+        foreach ($this->parentPoints as $points){
+            $returnData[$outsideIndex]=[];
+            foreach ($points as $pointId){
+                $returnData[$outsideIndex][]=[
+                    'Point'=>$this->point->getPointDetail($pointId),
+                    'Comments'=>$pointCommentInstance->getComments($pointId)
+                ];
+            }
+            $outsideIndex++;
+        }
         return self::returnActionResult(
             [
-                'Table'=>array_values($table),
-                'point'=>$this->point->getPointDetail($id)
+                'Points'=>array_reverse($returnData),
+                'Connection'=>$this->parentPointsConnection
             ]
         );
     }
@@ -127,104 +63,6 @@ class PointMindMap extends Base {
                 'Data'=>$json
             ]
         );
-    }
-
-    public function addTheLine(&$table){
-        foreach ($table as $outsideIndex=>$lines){
-            foreach ($lines as $insideIndex=>$item){
-                if ($item['Type']==PointTable::getTableType()){
-                    continue;
-                }
-                $A=0;
-                $B=0;
-                $C=0;
-                $D=0;
-                // check A
-                if (isset($table[$outsideIndex-1][$insideIndex]) && $table[$outsideIndex-1][$insideIndex]['Type']==Plus::getTableType()){
-                    $data=explode(",",$table[$outsideIndex-1][$insideIndex]['Data']);
-                    if ($data[2]==1){
-                        $A=1;
-                    }
-                }
-                // check B
-                if (isset($table[$outsideIndex][$insideIndex+1]) && $table[$outsideIndex][$insideIndex+1]['Type']==PointTable::getTableType()){
-                    $B=1;
-                }
-                // check C
-                if (isset($this->yData[$outsideIndex][$insideIndex+1])){
-                    $C=1;
-                }
-                if (isset($table[$outsideIndex][$insideIndex-1]) && $table[$outsideIndex][$insideIndex-1]['Type']==PointTable::getTableType()){
-                    $D=1;
-                }
-                if (!$A && !$B && !$C && $D){
-                    $D=0;
-                }
-                if (!$A && !$D && !$C && $B){
-                    $B=0;
-                }
-                $table[$outsideIndex][$insideIndex]=Plus::getTable([
-                    $A,$B,$C,$D
-                ]);
-            }
-        }
-    }
-
-    public function putDataBaseDataIntoTable($data,&$table,$x,$y,$addX=false,$preId=0){
-        static $endlessPrevent;
-        $startY=$y;
-        $hasData=false;
-        $endY=$y;
-        foreach ($data as $pid=>$subIds){
-            if (isset($endlessPrevent[$pid])){
-                continue;
-            }
-            $endlessPrevent[$pid]=1;
-            $hasData=true;
-            $endY=$y;
-            $table[$y][$x]=PointTable::getTable(
-                array_merge(
-                    $this->point->getPointDetail($pid),
-                    [
-                        'PID'=>$preId
-                    ]
-                )
-            );
-            if (!empty($subIds)){
-                $y=$this->putDataBaseDataIntoTable($subIds,$table,$addX?($x+2):($x-2),$y,$addX,$pid);
-            }
-            $y+=1;
-        }
-        if ($hasData){
-            for ($i=$startY;$i<$endY;$i++){
-                !isset($this->yData[$i]) && $this->yData[$i]=[];
-                $this->yData[$i][$x]=1;
-            }
-        }
-        return $y-1;
-    }
-
-    public function createEmptyTable(){
-        $table=[];
-        $outsideLength=max($this->SubPointsAmount,$this->ParentPointsAmount)+5;
-        $insideLength=(count($this->maxParentDeep)+count($this->maxSubDeep))*2+5;
-        for ($outsideIndex=0;$outsideIndex<$outsideLength;$outsideIndex++){
-            $table[$outsideIndex]=[];
-            for ($insideIndex=0;$insideIndex<$insideLength;$insideIndex++){
-                $table[$outsideIndex][$insideIndex]=EmptyTable::getTable();
-            }
-        }
-        return $table;
-    }
-
-    public function getAllDataFromDataBase($id){
-        $returnData=[
-            0=>[],
-            1=>[]
-        ];
-        $this->getAllParentPointID($id,$returnData[0]);
-        $this->getAllSubPointID($id,$returnData[1]);
-        return $returnData;
     }
 
     public function getAllSubPointID($pid,&$returnData,$deep=0){
@@ -260,13 +98,20 @@ class PointMindMap extends Base {
             $this->ParentPointsAmount++;
             return false;
         }
-        $deep>0 && $this->maxParentDeep[$deep]=1;
+        !isset($this->parentPoints[$deep]) && $this->parentPoints[$deep]=[];
+        $this->parentPoints[$deep][$subId]=$subId;
         $deep++;
+        !isset($this->parentPoints[$deep]) && $this->parentPoints[$deep]=[];
         foreach ($parentIds as $parentId){
+            $this->parentPointsConnection[]=[
+                'Parent'=>$parentId,
+                'SubParent'=>$subId
+            ];
             if ($parentId==0){
                 $this->ParentPointsAmount++;
                 continue;
             }
+            $this->parentPoints[$deep][$parentId]=$parentId;
             !isset($returnData[$parentId]) && $returnData[$parentId]=[];
             $this->getAllParentPointID($parentId,$returnData[$parentId],$deep);
         }

@@ -36,12 +36,16 @@ class PointsComments extends Base{
         if (empty($PID)){
             return self::returnActionResult($this->get,false,"Error Param");
         }
-        $sql=sprintf("select * from %s where PID=%d order by ID desc;",self::$table,$PID);
         return self::returnActionResult(
             [
-                'Comments'=>$this->pdo->getRows($sql)
+                'Comments'=>$this->getComments($PID)
             ]
         );
+    }
+
+    public function getComments($PID){
+        $sql=sprintf("select * from %s where PID=%d order by ID desc;",self::$table,$PID);
+        return $this->pdo->getRows($sql);
     }
 
     public function preSave()

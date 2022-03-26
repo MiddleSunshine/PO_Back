@@ -5,7 +5,7 @@ class Report extends Base{
         $this->post=json_decode($this->post,1);
         $startTime=$this->post['startTime'] ?? '';
         $endTime=$this->post['endTime'] ?? '';
-        empty($startTime) && $startTime=date("Y-m-d 00:00:00",strtotime("-15 day"));
+        empty($startTime) && $startTime=date("Y-m-d 00:00:00",strtotime("-7 day"));
         empty($endTime) && $endTime=date("Y-m-d 23:59:59");
         $page=1;
         $pageSize=5000;
@@ -131,18 +131,26 @@ class Report extends Base{
                     [
                         'data'=>$point,
                         'name'=>'Point',
-                        'type'=>'line'
+                        'type'=>'line',
+                        // itemStyle : { normal: {label : {show: true}}}
+                        'itemStyle'=>[
+                            'normal'=>[
+                                'label'=>[
+                                    'show'=>true
+                                ]
+                            ]
+                        ]
                     ],
-                    [
-                        'data'=>$willingAmount,
-                        'name'=>'Willing',
-                        'type'=>'line'
-                    ],
-                    [
-                        'data'=>$exchangeAblePoint,
-                        'name'=>'Point Rest',
-                        'type'=>'line'
-                    ]
+//                    [
+//                        'data'=>$willingAmount,
+//                        'name'=>'Willing',
+//                        'type'=>'line'
+//                    ],
+//                    [
+//                        'data'=>$exchangeAblePoint,
+//                        'name'=>'Point Rest',
+//                        'type'=>'line'
+//                    ]
                 ],
                 'xData'=>$dateRange,
                 'StartTime'=>$startTime,
