@@ -28,15 +28,21 @@ class PointMindMap extends Base {
         $returnData=[];
         $pointCommentInstance=new PointsComments();
         $outsideIndex=0;
+        $statusMap=[];
         foreach ($this->parentPoints as $points){
             $returnData[$outsideIndex]=[];
             foreach ($points as $pointId){
+                $point=$this->point->getPointDetail($pointId);
+                $statusMap[$point['ID']]=$point['status'];
                 $returnData[$outsideIndex][]=[
-                    'Point'=>$this->point->getPointDetail($pointId),
+                    'Point'=>$point,
                     'Comments'=>$pointCommentInstance->getComments($pointId)
                 ];
             }
             $outsideIndex++;
+        }
+        foreach ($this->parentPointsConnection as &$connection){
+            $connection['color']=$statusMap[$connection['Parent']] ?? Points::STATUS_INIT;
         }
         return self::returnActionResult(
             [
@@ -87,7 +93,7 @@ class PointMindMap extends Base {
     }
 
     public function getAllParentPointID($subId,&$returnData,$deep=0){
-        static $endlessPrevent;
+        static $endlessPrevent,$singlePIDs;
         if (isset($endlessPrevent[$subId])){
             return true;
         }
@@ -111,7 +117,8 @@ class PointMindMap extends Base {
                 $this->ParentPointsAmount++;
                 continue;
             }
-            $this->parentPoints[$deep][$parentId]=$parentId;
+            !isset($singlePIDs[$parentId]) && $this->parentPoints[$deep][$parentId]=$parentId;
+            $singlePIDs[$parentId]=1;
             !isset($returnData[$parentId]) && $returnData[$parentId]=[];
             $this->getAllParentPointID($parentId,$returnData[$parentId],$deep);
         }
