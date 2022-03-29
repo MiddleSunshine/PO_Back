@@ -13,6 +13,7 @@ define("MYSQL_SET_NAMES","utf8");
 define('TIME_ZONE','Asia/Shanghai');
 define("INDEX_FILE",dirname(__DIR__));
 define("MD_FILE_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."md".DIRECTORY_SEPARATOR);
+define("BOOK_MARK_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."bookmarker".DIRECTORY_SEPARATOR);
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
 function __autoload($class){
@@ -24,6 +25,10 @@ function __autoload($class){
         echo "not exists".PHP_EOL;
         exit();
     }
+}
+
+if(defined("BOOK_MARK_INDEX") && !is_dir(BOOK_MARK_INDEX)){
+    mkdir(BOOK_MARK_INDEX);
 }
 
 function debug($logFileName,$content){
