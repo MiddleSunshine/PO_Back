@@ -21,6 +21,8 @@ class Points extends Base{
         self::STATUS_ARCHIVED=>3
     ];
 
+    public $mindMapConnection=[];
+
     public function Index(){
         $pid=$this->get["id"] ?? 0;
         $this->post=json_decode($this->post,1);
@@ -55,6 +57,34 @@ class Points extends Base{
             }
         }
         return self::returnActionResult($returnData);
+    }
+
+    public function MindMapPoint(){
+        $PID=$this->get['PID'] ?? 0;
+        $subLevel=$this->get['SubLevel'] ?? 1;
+        $parentLevel=$this->get['ParentLevel'] ?? 1;
+        $returnData=[];
+        $connectionInstance=new PointsConnection();
+        $point=$this->getPointDetail($PID);
+        $comment=new PointsComments();
+        $point['Comments']=$comment->getComments($PID);
+        $this->getParentPoint($connectionInstance->getParentId($PID),$parentLevel,$returnData,$parentLevel,$PID);
+        $returnData[$parentLevel+1]=[
+            $point
+        ];
+        $this->getSubPoint($connectionInstance->getSubParentId($PID),$subLevel,$returnData,$parentLevel+2,$PID);
+        $filterData=[];
+        for($i=0;$i<count($returnData);$i++){
+            if(!empty($returnData[$i])){
+                $filterData[]=$returnData[$i];
+            }
+        }
+       return self::returnActionResult(
+           [
+               'Points'=>$filterData,
+               'Connection'=>$this->mindMapConnection
+           ]
+       );
     }
 
     public function ReviewPoint(){
@@ -228,6 +258,63 @@ class Points extends Base{
             $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and Deleted=0;",static::$table,$pid);
         }
         return $this->pdo->getFirstRow($sql);
+    }
+
+    public function getParentPoint($pointIds,$level,&$returnData,$index,$prePointId){
+        static $pointConnectionInstance,$pointCommentInstance;
+        !$pointConnectionInstance && $pointConnectionInstance=new PointsConnection();
+        !$pointCommentInstance && $pointCommentInstance=new PointsComments();
+        if ($level<0){
+            return false;
+        }
+        if (empty($pointIds)){
+            return false;
+        }
+        if ($index<0){
+            return false;
+        }
+        !isset($returnData[$index]) && $returnData[$index]=[];
+        $sql=sprintf("select * from %s where ID in (%s);",static::$table,implode(",",$pointIds));
+        $points=$this->pdo->getRows($sql);
+        if(empty($sql)){
+            return false;
+        }
+        foreach ($points as $point){
+            !isset($this->mindMapConnection[$point['ID']]) && $this->mindMapConnection[$point['ID']]=[];
+            $this->mindMapConnection[$point['ID']][]=$prePointId;
+            $point['Comments']=$pointCommentInstance->getComments($point['ID']);
+            $returnData[$index][]=$point;
+            $this->getParentPoint(
+                $pointConnectionInstance->getParentId($point['ID']),
+                $level-1,
+                $returnData,
+                $index-1,
+                $point['ID']
+            );
+        }
+    }
+
+    public function getSubPoint($pointIds,$level,&$returnData,$index,$prePointId){
+        static $pointConnectionInstance,$pointCommentInstance;
+        !$pointConnectionInstance && $pointConnectionInstance=new PointsConnection();
+        !$pointCommentInstance && $pointCommentInstance=new PointsComments();
+        if ($level<0){
+            return false;
+        }
+        if (empty($pointIds)){
+            return false;
+        }
+        !isset($returnData[$index]) && $returnData[$index]=[];
+        $sql=sprintf("select * from %s where ID in (%s);",static::$table,implode(",",$pointIds));
+        $points=$this->pdo->getRows($sql);
+        $this->mindMapConnection[$prePointId]=[];
+        foreach ($points as $point){
+            $this->mindMapConnection[$prePointId][]=$point['ID'];
+            $childPoints=$pointConnectionInstance->getSubParentId($point['ID']);
+            $point['Comments']=$pointCommentInstance->getComments($point['ID']);
+            $returnData[$index][]=$point;
+            $this->getSubPoint($childPoints,$level-1,$returnData,$index+1,$point['ID']);
+        }
     }
 
     public function AutoSend(){
