@@ -212,6 +212,18 @@ class Points extends Base{
         ]);
     }
 
+    public function CommonDelete()
+    {
+        parent::CommonDelete();
+        if (!empty($this->get['ID'])){
+            $sql=sprintf("delete from %s where PID=%d;",PointsConnection::$table,$this->get["ID"]);
+            $this->pdo->query($sql);
+            $sql=sprintf("delete from %s where SubPID=%d;",PointsConnection::$table,$this->get['ID']);
+            $this->pdo->query($sql);
+        }
+        return self::returnActionResult();
+    }
+
     public function GetAPoint(){
         $id=$this->get['id'] ?? 0;
         if (!$id){
@@ -249,6 +261,24 @@ class Points extends Base{
         $fileContent=$this->post['FileContent'];
         $fileContent && File::storeFile($dataBaseSaveResult['Data']['ID'],$this->post['point']['file'],$fileContent);
         return $dataBaseSaveResult;
+    }
+
+    public function WithoutConnectionPoints(){
+        $sql1=sprintf("select * from %s where ID not in (
+            select PID from %s
+            union
+            select SubPID from %s
+        ) and Deleted=0 and `status`!='%s';
+        ",self::$table,PointsConnection::$table,PointsConnection::$table,self::STATUS_ARCHIVED);
+        $sql2=sprintf("select * from %s where Deleted=1",self::$table);
+        return self::returnActionResult(
+            [
+                'Points'=>array_merge(
+                    $this->pdo->getRows($sql1),
+                    $this->pdo->getRows($sql2)
+                )
+            ]
+        );
     }
 
     public function getPointDetail($pid,$staus=''){
