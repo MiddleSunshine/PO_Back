@@ -5,7 +5,7 @@ class Report extends Base{
         $this->post=json_decode($this->post,1);
         $startTime=$this->post['startTime'] ?? '';
         $endTime=$this->post['endTime'] ?? '';
-        empty($startTime) && $startTime=date("Y-m-d 00:00:00",strtotime("-7 day"));
+        empty($startTime) && $startTime=date("Y-m-d 00:00:00",strtotime("-30 day"));
         empty($endTime) && $endTime=date("Y-m-d 23:59:59");
         $page=1;
         $pageSize=5000;
@@ -39,7 +39,16 @@ class Report extends Base{
             $points[$outsideIndex]=[
                 'name'=>$status,
                 'type'=>'bar',
-                'data'=>[]
+                'barWidth'=>20,
+                'stack'=>'Point',
+                'data'=>[],
+                'itemStyle'=>[
+                    'normal'=>[
+                        'label'=>[
+                            'show'=>true
+                        ]
+                    ]
+                ]
             ];
             foreach ($dateRange as $index=>$date){
                 $points[$outsideIndex]['data'][$index]=$amount[$date] ?? 0;
@@ -167,7 +176,7 @@ class Report extends Base{
         foreach ($count as $value){
             $returnData[]=[
                 'value'=>intval($value['number']),
-                'name'=>$value['status']
+                'name'=>$value['status']."( {$value['number']} )"
             ];
         }
         return self::returnActionResult($returnData);
