@@ -15,8 +15,9 @@ class PointsComments extends Base{
     }
 
     public function GetLastComment(){
-        $limit=$this->get['limit'] ?? 20;
-        $sql=sprintf("select * from %s order by ID desc limit %d",static::$table,$limit);
+        $page=$this->get['page'] ?? 1;
+        $pageSize=$this->get['page_size'] ?? 0;
+        $sql=sprintf("select * from %s order by ID desc limit %d,%d;",static::$table,($page-1)*$pageSize,$pageSize);
         $comments=$this->pdo->getRows($sql);
         $PIDs=array_unique(array_column($comments,'PID'));
         if (!empty($PIDs)){
