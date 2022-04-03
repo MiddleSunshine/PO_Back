@@ -85,6 +85,11 @@ class PointsConnection extends Base{
         if ($connection){
             return true;
         }
+        $sql=sprintf("select * from %s where PID=%d and SubPID=%d",static::$table,$subPID,$pid);
+        $connection=$this->pdo->getFirstRow($sql);
+        if ($connection){
+            return true;
+        }
         $sql=sprintf("insert into %s(PID,SubPID) value (%d,%d);",static::$table,$pid,$subPID);
         return $this->pdo->query($sql);
     }
