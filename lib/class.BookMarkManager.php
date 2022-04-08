@@ -4,6 +4,7 @@ class BookMark{
     public $bookMarkName;
     public $bookMarkNode;
     public $bookMarkHref;
+    public $updateTime;
 
     const SEPERATOR='========分割线=========';
 
@@ -14,6 +15,7 @@ class BookMark{
         }
         $this->bookMarkName=$fileName;
         list($this->bookMarkNode,$this->bookMarkHref)=explode(self::SEPERATOR,file_get_contents(BOOK_MARK_INDEX.$fileName));
+        $this->updateTime=date("m-d H:i:s",filemtime(BOOK_MARK_INDEX.$fileName));
     }
 
     public function SavebookMark(){
@@ -93,7 +95,8 @@ class BookMarkManager extends Base{
             $returnData[]=[
                 'Name'=>$bookMarker->bookMarkName,
                 'Note'=>$bookMarker->bookMarkNode,
-                'Href'=>$bookMarker->bookMarkHref
+                'Href'=>$bookMarker->bookMarkHref,
+                'LastUpdateTime'=>$bookMarker->updateTime
             ];
         }
         return self::returnActionResult(
