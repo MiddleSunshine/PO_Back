@@ -12,7 +12,7 @@ class Report extends Base{
         $returnData=[];
         while ($page<100){
             $sql=sprintf(
-                "select status,LastUpdateTime from %s where LastUpdateTime between '%s' and '%s' and Deleted=0 limit %d,%d",
+                "select status,AddTime from %s where AddTime between '%s' and '%s' and Deleted=0 limit %d,%d",
                 Points::$table,$startTime,$endTime,($page-1)*$pageSize,$pageSize
             );
             $page++;
@@ -21,7 +21,7 @@ class Report extends Base{
                 break;
             }
             foreach ($points as $point){
-                $date=date("m-d",strtotime($point['LastUpdateTime']));
+                $date=date("m-d",strtotime($point['AddTime']));
                 $status=$point['status'];
                 if (!isset($returnData[$status])){
                     $returnData[$status]=[];
