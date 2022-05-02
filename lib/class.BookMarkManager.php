@@ -92,6 +92,15 @@ class BookMarkManager extends Base{
     public function BookMarkList(){
         $bookMarkers=BookMark::GetbookMarks();
         $returnData=[];
+        usort($bookMarkers,function ($b1,$b2){
+            /**
+             * @var $b1 BookMark
+             * @var $b2 BookMark
+             */
+            empty($b1->createTimeStamp) && $b1->createTimeStamp=1;
+            empty($b2->createTimeStamp) && $b2->createTimeStamp=1;
+            return $b2->createTimeStamp-$b1->createTimeStamp;
+        });
         foreach ($bookMarkers as $bookMarker){
             /**
              * @var $bookMarker BookMark
