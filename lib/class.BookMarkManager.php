@@ -4,6 +4,7 @@ class BookMark{
     public $bookMarkName;
     public $bookMarkNode;
     public $bookMarkHref;
+    public $createTimeStamp;
     public $updateTime;
 
     const SEPERATOR='========分割线=========';
@@ -14,14 +15,17 @@ class BookMark{
             touch(BOOK_MARK_INDEX.$fileName);
         }
         $this->bookMarkName=$fileName;
-        list($this->bookMarkNode,$this->bookMarkHref)=explode(self::SEPERATOR,file_get_contents(BOOK_MARK_INDEX.$fileName));
-        $this->updateTime=date("m-d H:i:s",filemtime(BOOK_MARK_INDEX.$fileName));
+        list($this->bookMarkNode,$this->bookMarkHref,$this->createTimeStamp)=explode(self::SEPERATOR,file_get_contents(BOOK_MARK_INDEX.$fileName));
     }
 
     public function SavebookMark(){
+        empty($this->createTimeStamp) && $this->createTimeStamp=time();
+        $this->updateTime=date("Y-m-d H:i:s");
         file_put_contents(BOOK_MARK_INDEX.$this->bookMarkName,implode(self::SEPERATOR,[
             $this->bookMarkNode,
-            $this->bookMarkHref
+            $this->bookMarkHref,
+            $this->createTimeStamp,
+            $this->updateTime
         ]));
     }
 
