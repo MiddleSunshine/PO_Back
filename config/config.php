@@ -27,8 +27,14 @@ function __autoload($class){
     }
 }
 
+spl_autoload_register("__autoload2");
+
 if(defined("BOOK_MARK_INDEX") && !is_dir(BOOK_MARK_INDEX)){
     mkdir(BOOK_MARK_INDEX);
+}
+
+if (defined("POINT_COLLECT_INDEX") && !is_dir(POINT_COLLECT_INDEX)){
+    mkdir(POINT_COLLECT_INDEX);
 }
 
 function debug($logFileName,$content){
