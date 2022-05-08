@@ -41,20 +41,6 @@ class ElasticSearch{
         return false;
     }
 
-    public function GetAllDatabase(){
-        // todo 不要使用这个API，换一个
-        $response=$this->crawler->GetHttpResult(
-            sprintf("%s/_cat/indices?v",$this->ES_Service_URL)
-        );
-        $databses=explode(PHP_EOL,$response['content']);
-        $returnData=[];
-        foreach ($databses as $database){
-            $data=explode("\t",$database);
-            $s=1;
-            // green  open   .geoip_databases eXUrExHzScWaU2c_MKm7Eg   1   0         40            0       38mb           38mb
-        }
-    }
-
     public function StoreDocument($index,$ID,$storeData){
         $response=$this->crawler->GetHttpResult(
             sprintf("%s/%s/_doc/%s",$this->ES_Service_URL,$index,$ID),
