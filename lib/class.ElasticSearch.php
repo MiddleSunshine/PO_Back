@@ -63,10 +63,26 @@ class ElasticSearch{
                 'postdata'=>json_encode($storeData),
                 'addheader'=>[
                     'Content-Type: application/json'
-                ]
+                ],
+                'customer_method'=>'put'
             ]
         );
         if ($response['code']!=201 && $response['code']!=200){
+            $content=json_decode($response['content'],1);
+            $this->error=$content['error'];
+            return false;
+        }
+        return true;
+    }
+
+    public function DeleteDocument($index,$ID){
+        $response=$this->crawler->GetHttpResult(
+            sprintf("%s/%s/_doc/%s",$this->ES_Service_URL,$index,$ID),
+            [
+                'customer_method'=>'DELETE'
+            ]
+        );
+        if ($response['code']!==200){
             $content=json_decode($response['content'],1);
             $this->error=$content['error'];
             return false;

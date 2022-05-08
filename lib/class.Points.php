@@ -164,6 +164,8 @@ class Points extends Base{
             return self::returnActionResult(['point'=>$point],false,"Point已经存在");
         }
         $this->handleSql($this->post,$this->post['ID']);
+        $search=new Search();
+        $search->addQueue($point['ID']);
         return self::returnActionResult($this->post);
     }
 
@@ -206,6 +208,8 @@ class Points extends Base{
             $pointsConnection=new PointsConnection();
             $pointsConnection->updatePointsConnection($pid,$point['ID']);
         }
+        $search=new Search();
+        $search->addQueue($point['ID']);
         return self::returnActionResult([
             'ID'=>$point['ID'],
             'Status'=>$point['status']
@@ -216,6 +220,8 @@ class Points extends Base{
     {
         parent::CommonDelete();
         if (!empty($this->get['ID'])){
+            $search=new Search();
+            $search->addQueue($this->get['ID'],Search::OPTION_DELETE);
             $sql=sprintf("delete from %s where PID=%d;",PointsConnection::$table,$this->get["ID"]);
             $this->pdo->query($sql);
             $sql=sprintf("delete from %s where SubPID=%d;",PointsConnection::$table,$this->get['ID']);

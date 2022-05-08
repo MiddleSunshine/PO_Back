@@ -13,8 +13,10 @@ class Search extends Base{
 
     const MD_FILE_KEY='markdown_content';
 
+    const OPTION_SAVE="SAVE";
+    const OPTION_DELETE='Delete';
+
     public function syncData($limit=2000){
-        // 首先将队列移动到 processing 目录下
         try {
             $this->preCheck();
         }catch (\Exception $e){
@@ -28,29 +30,40 @@ class Search extends Base{
         $sql=sprintf("select * from %s where ID in (%s);",Points::$table,implode(",",$files));
         $points=$this->pdo->getRows($sql,'ID');
         foreach ($files as $file){
+            $option=file_get_contents($this->todoQueue.$file);
             unlink($this->todoQueue.$file);
             if (isset($points[$file])){
-                $storeData=$points[$file];
-                $storeData[self::MD_FILE_KEY]="";
-                if (!empty($storeData['file'])){
-                    $storeData[self::MD_FILE_KEY]=File::getFileContent($storeData['ID'],$storeData['file']);
+                switch ($option){
+                    case self::OPTION_SAVE:
+                        $storeData=$points[$file];
+                        $storeData[self::MD_FILE_KEY]="";
+                        if (!empty($storeData['file'])){
+                            $storeData[self::MD_FILE_KEY]=File::getFileContent($storeData['ID'],$storeData['file']);
+                        }
+                        if(!$this->elasticSearch->StoreDocument($this->elasticSearchIndex,$file,$storeData)){
+                            file_put_contents($this->failQueue.$file,date("Y-m-d H:i:s")." / ".$this->elasticSearch->getError().PHP_EOL,FILE_APPEND);
+                        }
+                        break;
+                    case self::OPTION_DELETE:
+                        $this->elasticSearch->DeleteDocument($this->elasticSearchIndex,$file);
+                        break;
                 }
-                if(!$this->elasticSearch->StoreDocument($this->elasticSearchIndex,$file,$storeData)){
-                    file_put_contents($this->failQueue.$file,date("Y-m-d H:i:s")." / ".$this->elasticSearch->getError().PHP_EOL,FILE_APPEND);
-                }
+            }else{
+                // 这个数据在数据库中已经不存在了
+                $this->elasticSearch->DeleteDocument($this->elasticSearchIndex,$file);
             }
         }
         return true;
     }
 
-    public function addQueue($ID){
+    public function addQueue($ID,$option=self::OPTION_SAVE){
         try {
             $this->preCheck();
         }catch (\Exception $e){
             $this->error=$e->getMessage();
             return false;
         }
-        file_put_contents($this->todoQueue.$ID,date("Y-m-d H:i:s"));
+        file_put_contents($this->todoQueue.$ID,$option);
         return true;
     }
 
