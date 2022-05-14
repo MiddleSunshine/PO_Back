@@ -119,6 +119,36 @@ class Points extends Base{
         );
     }
 
+    public function GlobalSearch(){
+        $this->post=json_decode($this->post,1);
+        $search=new Search();
+        $searchResult=$search->SearchKeyword($this->post['keyword'] ?? "");
+        if (!$searchResult){
+            return self::returnActionResult(
+                [],
+                false,
+                $search->getError()
+            );
+        }
+        $PIDs=implode(",",array_keys($searchResult));
+        if (empty($PIDs)){
+            return self::returnActionResult();
+        }
+        $sql=sprintf("select * from %s where ID in (%s)",Points::$table,$PIDs);
+        $points=$this->pdo->getRows($sql);
+        foreach ($points as &$point){
+            $highlight=$searchResult[$point['ID']]['Highlight'];
+            foreach ($highlight as $field=>&$items){
+                $items=implode(PHP_EOL.PHP_EOL,$items);
+                $highlight[$field]=$items;
+            }
+            $point['Highlight']=$highlight;
+        }
+        return self::returnActionResult([
+            'points'=>$points
+        ]);
+    }
+
     public function Search(){
         $this->post=json_decode($this->post,1);
         if (empty($this->post['keyword'])){

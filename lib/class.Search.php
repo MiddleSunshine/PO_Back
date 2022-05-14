@@ -92,8 +92,7 @@ class Search extends Base{
         $returnData=[];
         $searchResult=json_decode($searchResult,1);
         foreach ($searchResult['hits']['hits'] as $hit){
-            $returnData[]=[
-                'ID'=>$hit['_source']['ID'],
+            $returnData[$hit['_source']['ID']]=[
                 'Highlight'=>$hit['highlight']
             ];
         }
