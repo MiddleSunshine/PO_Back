@@ -252,7 +252,7 @@ class HttpCrawler
 
         if(isset($_para["method"]) && $_para["method"] == "post")
         {
-            curl_setopt($ch, CURLOPT_POST, true);
+            !empty($_para['customer_method']) && curl_setopt($ch, CURLOPT_POST, true);
 
             if(isset($_para["postdata"]))
             {

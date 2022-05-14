@@ -50,7 +50,7 @@ class ElasticSearch{
                 'addheader'=>[
                     'Content-Type: application/json'
                 ],
-                'customer_method'=>'put'
+                'customer_method'=>'PUT'
             ]
         );
         if ($response['code']!=201 && $response['code']!=200){
@@ -74,6 +74,60 @@ class ElasticSearch{
             return false;
         }
         return true;
+    }
+
+    public function SearchOneField($index,$field,$keyword,$source='ID'){
+        $response=$this->crawler->GetHttpResult(
+            sprintf("%s/%s/_search",$this->ES_Service_URL,$index),
+            [
+                'customer_method'=>'GET',
+                'method'=>'post',
+                'postdata'=>sprintf('{"query":{"match":{"%s":"%s"}},"_source":["%s"],"highlight":{"pre_tags":["<font color=\'red\'>"],"post_tags":["</font>"],"fields":{"%s":{}}}}',
+                $field,
+                $keyword,
+                $source,
+                $field
+                ),
+                'addheader'=>[
+                    'Content-Type: application/json'
+                ]
+            ]
+        );
+        if ($response['code']==200){
+            return $response['content'];
+        }
+        $content=json_decode($response['content'],1);
+        $this->error=$content['error']['reason'];
+        return false;
+    }
+
+    public function SearchMultipleFileds($index,$search,$source='ID'){
+        $searchPart1=$searchPart2=[];
+        foreach ($search as $field=>$keyword){
+            $searchPart1[]=sprintf('{"match":{"%s":"%s"}}',$field,$keyword);
+            $searchPart2[]=sprintf('"%s":{}',$field);
+        }
+        $response=$this->crawler->GetHttpResult(
+            sprintf("%s/%s/_search",$this->ES_Service_URL,$index),
+            [
+                'customer_method'=>'GET',
+                'method'=>'post',
+                'addheader'=>[
+                    'Content-Type: application/json'
+                ],
+                'postdata'=>sprintf('{"query":{"bool":{"should":[%s]}},"_source":["%s"],"highlight":{"require_field_match":false,"pre_tags":["<font color=\'red\'>"],"post_tags":["</font>"],"fields":{%s}}}',
+                    implode(",",$searchPart1),
+                $source,
+                implode(",",$searchPart2)
+                )
+            ]
+        );
+        if ($response['code']==200){
+            return $response['content'];
+        }
+        $content=json_decode($response['content'],1);
+        $this->error=$content['error']['reason'];
+        return false;
     }
 
     public function getError(){

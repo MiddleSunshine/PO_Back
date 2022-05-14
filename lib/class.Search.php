@@ -5,7 +5,7 @@ class Search extends Base{
      * @var $elasticSearch ElasticSearch
      */
     public $elasticSearch;
-    private $elasticSearchIndex="po";
+    private $elasticSearchIndex="points";
     protected $error;
     private $todoQueue;
     private $failQueue;
@@ -41,7 +41,7 @@ class Search extends Base{
                             $storeData[self::MD_FILE_KEY]=File::getFileContent($storeData['ID'],$storeData['file']);
                         }
                         if(!$this->elasticSearch->StoreDocument($this->elasticSearchIndex,$file,$storeData)){
-                            file_put_contents($this->failQueue.$file,date("Y-m-d H:i:s")." / ".$this->elasticSearch->getError().PHP_EOL,FILE_APPEND);
+                            file_put_contents($this->failQueue.$file,$option." / ".date("Y-m-d H:i:s")." / ".$this->elasticSearch->getError().PHP_EOL,FILE_APPEND);
                         }
                         break;
                     case self::OPTION_DELETE:
@@ -67,9 +67,48 @@ class Search extends Base{
         return true;
     }
 
+    public function SearchKeyword($keyword){
+        try {
+            $this->preCheck();
+        }catch (\Exception $e){
+            $this->error=$e->getMessage();
+            return false;
+        }
+        if (empty($keyword)){
+            return [];
+        }
+        $searchResult=$this->elasticSearch->SearchMultipleFileds(
+            $this->elasticSearchIndex,
+            [
+                self::MD_FILE_KEY=>$keyword,
+                'note'=>$keyword,
+                'keyword'=>$keyword
+            ]
+        );
+        if (!$searchResult){
+            $this->error=$this->elasticSearch->getError();
+            return false;
+        }
+        $returnData=[];
+        $searchResult=json_decode($searchResult,1);
+        foreach ($searchResult['hits']['hits'] as $hit){
+            $returnData[]=[
+                'ID'=>$hit['_source']['ID'],
+                'Highlight'=>$hit['highlight']
+            ];
+        }
+        return $returnData;
+    }
+
     public function refreshESAllData(){
         $page=0;
         $pageSize=1000;
+        try {
+            $this->preCheck();
+        }catch (\Exception $e){
+            print "Error : ".$e->getMessage().PHP_EOL;
+            return false;
+        }
         $this->elasticSearch->NewDatabase($this->elasticSearchIndex);
         while ($page<10000){
             $page++;
