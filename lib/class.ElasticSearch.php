@@ -115,7 +115,7 @@ class ElasticSearch{
                 'addheader'=>[
                     'Content-Type: application/json'
                 ],
-                'postdata'=>sprintf('{"query":{"bool":{"should":[%s]}},"_source":["%s"],"highlight":{"require_field_match":false,"pre_tags":["<font color=\'red\'>"],"post_tags":["</font>"],"fields":{%s}}}',
+                'postdata'=>sprintf('{"query":{"bool":{"should":[%s]}},"_source":["%s"],"highlight":{"require_field_match":false,"pre_tags":["<span class=\'ES_Enhance\'>"],"post_tags":["</span>"],"fields":{%s}}}',
                     implode(",",$searchPart1),
                 $source,
                 implode(",",$searchPart2)

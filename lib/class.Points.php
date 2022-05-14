@@ -123,7 +123,7 @@ class Points extends Base{
         $this->post=json_decode($this->post,1);
         $search=new Search();
         $searchResult=$search->SearchKeyword($this->post['keyword'] ?? "");
-        if (!$searchResult){
+        if (is_bool($searchResult)){
             return self::returnActionResult(
                 [],
                 false,
@@ -131,18 +131,29 @@ class Points extends Base{
             );
         }
         $PIDs=implode(",",array_keys($searchResult));
-        if (empty($PIDs)){
-            return self::returnActionResult();
+        if (!empty($PIDs)){
+            $where=sprintf("ID in (%s)",$PIDs);
+        }else{
+            $where="keyword like '%".$this->post['keyword']."%' or note like '%".$this->post['keyword']."%'";
         }
-        $sql=sprintf("select * from %s where ID in (%s)",Points::$table,$PIDs);
+        if (!empty($this->post['SearchAble'])){
+            $where.=sprintf(" and SearchAble='%s'",$this->post['SearchAble']);
+        }
+        if (!empty($this->post['status'])){
+            $where.=sprintf(" and status='%s'",$this->post['status']);
+        }
+        $sql=sprintf("select * from %s where %s and Deleted=0;",Points::$table,$where);
         $points=$this->pdo->getRows($sql);
         foreach ($points as &$point){
-            $highlight=$searchResult[$point['ID']]['Highlight'];
-            foreach ($highlight as $field=>&$items){
-                $items=implode(PHP_EOL.PHP_EOL,$items);
-                $highlight[$field]=$items;
+            $point['Highlight']=[];
+            if (isset($searchResult[$point['ID']])){
+                $highlight=$searchResult[$point['ID']]['Highlight'];
+                foreach ($highlight as $field=>&$items){
+                    $items=implode(PHP_EOL.PHP_EOL,$items);
+                    $highlight[$field]=$items;
+                }
+                $point['Highlight']=$highlight;
             }
-            $point['Highlight']=$highlight;
         }
         return self::returnActionResult([
             'points'=>$points
