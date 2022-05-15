@@ -18,6 +18,7 @@ define("POINT_COLLECT_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."point_collect".DIRE
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
 function __autoload($class){
+define("ES_SERVER","http://127.0.0.1:9200");
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
     if (file_exists($fileName)){
         require_once $fileName;
@@ -51,4 +52,14 @@ function getFirstAndLastDay($date)
         $firstday,
         $lastday
     ];
+}
+
+function check_process($process) {
+    $cmd = `ps aux | grep $process | grep 'grep' -v | grep '/bin/sh' -v -c`;
+    $count = '' . $cmd . '';
+    if ($count > 1) {
+        return false;
+    } else {
+        return true;
+    }
 }

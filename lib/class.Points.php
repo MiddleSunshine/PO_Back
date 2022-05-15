@@ -119,6 +119,47 @@ class Points extends Base{
         );
     }
 
+    public function GlobalSearch(){
+        $this->post=json_decode($this->post,1);
+        $search=new Search();
+        $searchResult=$search->SearchKeyword($this->post['keyword'] ?? "");
+        if (is_bool($searchResult)){
+            return self::returnActionResult(
+                [],
+                false,
+                $search->getError()
+            );
+        }
+        $PIDs=implode(",",array_keys($searchResult));
+        if (!empty($PIDs)){
+            $where=sprintf("ID in (%s)",$PIDs);
+        }else{
+            $where="keyword like '%".$this->post['keyword']."%' or note like '%".$this->post['keyword']."%'";
+        }
+        if (!empty($this->post['SearchAble'])){
+            $where.=sprintf(" and SearchAble='%s'",$this->post['SearchAble']);
+        }
+        if (!empty($this->post['status'])){
+            $where.=sprintf(" and status='%s'",$this->post['status']);
+        }
+        $sql=sprintf("select * from %s where %s and Deleted=0;",Points::$table,$where);
+        $points=$this->pdo->getRows($sql);
+        foreach ($points as &$point){
+            $point['Highlight']=[];
+            if (isset($searchResult[$point['ID']])){
+                $highlight=$searchResult[$point['ID']]['Highlight'];
+                foreach ($highlight as $field=>&$items){
+                    $items=implode(PHP_EOL.PHP_EOL,$items);
+                    $highlight[$field]=$items;
+                }
+                $point['Highlight']=$highlight;
+            }
+        }
+        return self::returnActionResult([
+            'points'=>$points
+        ]);
+    }
+
     public function Search(){
         $this->post=json_decode($this->post,1);
         if (empty($this->post['keyword'])){
@@ -164,6 +205,8 @@ class Points extends Base{
             return self::returnActionResult(['point'=>$point],false,"Point已经存在");
         }
         $this->handleSql($this->post,$this->post['ID']);
+        $search=new Search();
+        $search->addQueue($point['ID']);
         return self::returnActionResult($this->post);
     }
 
@@ -206,6 +249,8 @@ class Points extends Base{
             $pointsConnection=new PointsConnection();
             $pointsConnection->updatePointsConnection($pid,$point['ID']);
         }
+        $search=new Search();
+        $search->addQueue($point['ID']);
         return self::returnActionResult([
             'ID'=>$point['ID'],
             'Status'=>$point['status']
@@ -216,6 +261,8 @@ class Points extends Base{
     {
         parent::CommonDelete();
         if (!empty($this->get['ID'])){
+            $search=new Search();
+            $search->addQueue($this->get['ID'],Search::OPTION_DELETE);
             $sql=sprintf("delete from %s where PID=%d;",PointsConnection::$table,$this->get["ID"]);
             $this->pdo->query($sql);
             $sql=sprintf("delete from %s where SubPID=%d;",PointsConnection::$table,$this->get['ID']);
