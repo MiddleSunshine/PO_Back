@@ -14,3 +14,7 @@ OSS/composer.lock
 OSS/vendor/
 
 OSS/composer.phar
+
+bookmarker/
+
+point_collect/

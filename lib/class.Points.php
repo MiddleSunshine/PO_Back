@@ -21,6 +21,8 @@ class Points extends Base{
         self::STATUS_ARCHIVED=>3
     ];
 
+    public $mindMapConnection=[];
+
     public function Index(){
         $pid=$this->get["id"] ?? 0;
         $this->post=json_decode($this->post,1);
@@ -57,6 +59,34 @@ class Points extends Base{
         return self::returnActionResult($returnData);
     }
 
+    public function MindMapPoint(){
+        $PID=$this->get['PID'] ?? 0;
+        $subLevel=$this->get['SubLevel'] ?? 1;
+        $parentLevel=$this->get['ParentLevel'] ?? 1;
+        $returnData=[];
+        $connectionInstance=new PointsConnection();
+        $point=$this->getPointDetail($PID);
+        $comment=new PointsComments();
+        $point['Comments']=$comment->getComments($PID);
+        $this->getParentPoint($connectionInstance->getParentId($PID),$parentLevel,$returnData,$parentLevel,$PID);
+        $returnData[$parentLevel+1]=[
+            $point
+        ];
+        $this->getSubPoint($connectionInstance->getSubParentId($PID),$subLevel,$returnData,$parentLevel+2,$PID);
+        $filterData=[];
+        for($i=0;$i<count($returnData);$i++){
+            if(!empty($returnData[$i])){
+                $filterData[]=$returnData[$i];
+            }
+        }
+       return self::returnActionResult(
+           [
+               'Points'=>$filterData,
+               'Connection'=>$this->mindMapConnection
+           ]
+       );
+    }
+
     public function ReviewPoint(){
         $startTime=$this->get['StartTime'] ?? '';
         $endTime=$this->get['EndTime'] ?? date("Y-m-d");
@@ -87,6 +117,47 @@ class Points extends Base{
                 'Points'=>array_values($points)
             ]
         );
+    }
+
+    public function GlobalSearch(){
+        $this->post=json_decode($this->post,1);
+        $search=new Search();
+        $searchResult=$search->SearchKeyword($this->post['keyword'] ?? "");
+        if (is_bool($searchResult)){
+            return self::returnActionResult(
+                [],
+                false,
+                $search->getError()
+            );
+        }
+        $PIDs=implode(",",array_keys($searchResult));
+        if (!empty($PIDs)){
+            $where=sprintf("ID in (%s)",$PIDs);
+        }else{
+            $where="keyword like '%".$this->post['keyword']."%' or note like '%".$this->post['keyword']."%'";
+        }
+        if (!empty($this->post['SearchAble'])){
+            $where.=sprintf(" and SearchAble='%s'",$this->post['SearchAble']);
+        }
+        if (!empty($this->post['status'])){
+            $where.=sprintf(" and status='%s'",$this->post['status']);
+        }
+        $sql=sprintf("select * from %s where %s and Deleted=0;",Points::$table,$where);
+        $points=$this->pdo->getRows($sql);
+        foreach ($points as &$point){
+            $point['Highlight']=[];
+            if (isset($searchResult[$point['ID']])){
+                $highlight=$searchResult[$point['ID']]['Highlight'];
+                foreach ($highlight as $field=>&$items){
+                    $items=implode(PHP_EOL.PHP_EOL,$items);
+                    $highlight[$field]=$items;
+                }
+                $point['Highlight']=$highlight;
+            }
+        }
+        return self::returnActionResult([
+            'points'=>$points
+        ]);
     }
 
     public function Search(){
@@ -134,6 +205,8 @@ class Points extends Base{
             return self::returnActionResult(['point'=>$point],false,"Point已经存在");
         }
         $this->handleSql($this->post,$this->post['ID']);
+        $search=new Search();
+        $search->addQueue($point['ID']);
         return self::returnActionResult($this->post);
     }
 
@@ -176,10 +249,26 @@ class Points extends Base{
             $pointsConnection=new PointsConnection();
             $pointsConnection->updatePointsConnection($pid,$point['ID']);
         }
+        $search=new Search();
+        $search->addQueue($point['ID']);
         return self::returnActionResult([
             'ID'=>$point['ID'],
             'Status'=>$point['status']
         ]);
+    }
+
+    public function CommonDelete()
+    {
+        parent::CommonDelete();
+        if (!empty($this->get['ID'])){
+            $search=new Search();
+            $search->addQueue($this->get['ID'],Search::OPTION_DELETE);
+            $sql=sprintf("delete from %s where PID=%d;",PointsConnection::$table,$this->get["ID"]);
+            $this->pdo->query($sql);
+            $sql=sprintf("delete from %s where SubPID=%d;",PointsConnection::$table,$this->get['ID']);
+            $this->pdo->query($sql);
+        }
+        return self::returnActionResult();
     }
 
     public function GetAPoint(){
@@ -221,6 +310,24 @@ class Points extends Base{
         return $dataBaseSaveResult;
     }
 
+    public function WithoutConnectionPoints(){
+        $sql1=sprintf("select * from %s where ID not in (
+            select PID from %s
+            union
+            select SubPID from %s
+        ) and Deleted=0 and `status`!='%s';
+        ",self::$table,PointsConnection::$table,PointsConnection::$table,self::STATUS_ARCHIVED);
+        $sql2=sprintf("select * from %s where Deleted=1",self::$table);
+        return self::returnActionResult(
+            [
+                'Points'=>array_merge(
+                    $this->pdo->getRows($sql1),
+                    $this->pdo->getRows($sql2)
+                )
+            ]
+        );
+    }
+
     public function getPointDetail($pid,$staus=''){
         if ($staus){
             $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and status in (%s) and Deleted=0",static::$table,$pid,$staus);
@@ -228,6 +335,63 @@ class Points extends Base{
             $sql=sprintf("select ID,keyword,status,Point,Favourite,note,file,SearchAble from %s where ID=%d and Deleted=0;",static::$table,$pid);
         }
         return $this->pdo->getFirstRow($sql);
+    }
+
+    public function getParentPoint($pointIds,$level,&$returnData,$index,$prePointId){
+        static $pointConnectionInstance,$pointCommentInstance;
+        !$pointConnectionInstance && $pointConnectionInstance=new PointsConnection();
+        !$pointCommentInstance && $pointCommentInstance=new PointsComments();
+        if ($level<0){
+            return false;
+        }
+        if (empty($pointIds)){
+            return false;
+        }
+        if ($index<0){
+            return false;
+        }
+        !isset($returnData[$index]) && $returnData[$index]=[];
+        $sql=sprintf("select * from %s where ID in (%s);",static::$table,implode(",",$pointIds));
+        $points=$this->pdo->getRows($sql);
+        if(empty($sql)){
+            return false;
+        }
+        foreach ($points as $point){
+            !isset($this->mindMapConnection[$point['ID']]) && $this->mindMapConnection[$point['ID']]=[];
+            $this->mindMapConnection[$point['ID']][]=$prePointId;
+            $point['Comments']=$pointCommentInstance->getComments($point['ID']);
+            $returnData[$index][]=$point;
+            $this->getParentPoint(
+                $pointConnectionInstance->getParentId($point['ID']),
+                $level-1,
+                $returnData,
+                $index-1,
+                $point['ID']
+            );
+        }
+    }
+
+    public function getSubPoint($pointIds,$level,&$returnData,$index,$prePointId){
+        static $pointConnectionInstance,$pointCommentInstance;
+        !$pointConnectionInstance && $pointConnectionInstance=new PointsConnection();
+        !$pointCommentInstance && $pointCommentInstance=new PointsComments();
+        if ($level<0){
+            return false;
+        }
+        if (empty($pointIds)){
+            return false;
+        }
+        !isset($returnData[$index]) && $returnData[$index]=[];
+        $sql=sprintf("select * from %s where ID in (%s);",static::$table,implode(",",$pointIds));
+        $points=$this->pdo->getRows($sql);
+        $this->mindMapConnection[$prePointId]=[];
+        foreach ($points as $point){
+            $this->mindMapConnection[$prePointId][]=$point['ID'];
+            $childPoints=$pointConnectionInstance->getSubParentId($point['ID']);
+            $point['Comments']=$pointCommentInstance->getComments($point['ID']);
+            $returnData[$index][]=$point;
+            $this->getSubPoint($childPoints,$level-1,$returnData,$index+1,$point['ID']);
+        }
     }
 
     public function AutoSend(){

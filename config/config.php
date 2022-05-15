@@ -13,8 +13,13 @@ define("MYSQL_SET_NAMES","utf8");
 define('TIME_ZONE','Asia/Shanghai');
 define("INDEX_FILE",dirname(__DIR__));
 define("MD_FILE_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."md".DIRECTORY_SEPARATOR);
+define("BOOK_MARK_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."bookmarker".DIRECTORY_SEPARATOR);
+define("POINT_COLLECT_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."point_collect".DIRECTORY_SEPARATOR);
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
+
+define("ES_SERVER","http://172.19.0.9:9200");
+
 function __autoload($class){
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
     if (file_exists($fileName)){
@@ -24,6 +29,16 @@ function __autoload($class){
         echo "not exists".PHP_EOL;
         exit();
     }
+}
+
+// spl_autoload_register("__autoload2");
+
+if(defined("BOOK_MARK_INDEX") && !is_dir(BOOK_MARK_INDEX)){
+    mkdir(BOOK_MARK_INDEX);
+}
+
+if (defined("POINT_COLLECT_INDEX") && !is_dir(POINT_COLLECT_INDEX)){
+    mkdir(POINT_COLLECT_INDEX);
 }
 
 function debug($logFileName,$content){
@@ -39,4 +54,14 @@ function getFirstAndLastDay($date)
         $firstday,
         $lastday
     ];
+}
+
+function check_process($process) {
+    $cmd = `ps aux | grep $process | grep 'grep' -v | grep '/bin/sh' -v -c`;
+    $count = '' . $cmd . '';
+    if ($count > 1) {
+        return false;
+    } else {
+        return true;
+    }
 }
