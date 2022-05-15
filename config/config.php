@@ -17,8 +17,10 @@ define("BOOK_MARK_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."bookmarker".DIRECTORY_S
 define("POINT_COLLECT_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."point_collect".DIRECTORY_SEPARATOR);
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
+
+define("ES_SERVER","http://172.19.0.9:9200");
+
 function __autoload($class){
-define("ES_SERVER","http://127.0.0.1:9200");
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
     if (file_exists($fileName)){
         require_once $fileName;
@@ -29,7 +31,7 @@ define("ES_SERVER","http://127.0.0.1:9200");
     }
 }
 
-spl_autoload_register("__autoload2");
+// spl_autoload_register("__autoload2");
 
 if(defined("BOOK_MARK_INDEX") && !is_dir(BOOK_MARK_INDEX)){
     mkdir(BOOK_MARK_INDEX);
