@@ -73,6 +73,11 @@ class PointsConnection extends Base{
         return array_column($dataBaseData,'SubPID');
     }
 
+    public function getSubPoints($pid,$returnNote=true){
+        $sql=sprintf("select ID,SubPID,note from %s where PID=%d;",static::$table,$pid);
+        return $this->pdo->getRows($sql);
+    }
+
     public function getParentId($id){
         $sql=sprintf("select PID from %s where SubPID=%d;",static::$table,$id);
         $databaseData=$this->pdo->getRows($sql);

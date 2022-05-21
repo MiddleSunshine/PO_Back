@@ -33,21 +33,27 @@ class Points extends Base{
         }
         $searchStatus=implode(",",$searchStatus);
         $pointsConnection=new PointsConnection();
-        $subPids=$pointsConnection->getSubParentId($pid);
+        $subPids=$pointsConnection->getSubPoints($pid);
         if (empty($subPids)){
             return self::returnActionResult([]);
         }
         $returnData=[
             'points'=>[]
         ];
-        foreach ($subPids as $subPid){
-            $childrenPids=$pointsConnection->getSubParentId($subPid);
+        foreach ($subPids as $subPidData){
+            $subPid=$subPidData['SubPID'];
+            $childrenPids=$pointsConnection->getSubPoints($subPid);
             $point=$this->getPointDetail($subPid,$searchStatus);
+            $point['connection_note']=$subPidData['note'];
+            $point['connection_ID']=$subPidData['ID'];
             if ($point){
                 $point['children']=[];
                 if (!empty($childrenPids)){
-                    foreach ($childrenPids as $childrenPid){
+                    foreach ($childrenPids as $childrenPidData){
+                        $childrenPid=$childrenPidData['SubPID'];
                         $childrenPoint=$this->getPointDetail($childrenPid,$searchStatus);
+                        $childrenPoint['connection_note']=$childrenPidData['note'];
+                        $childrenPoint['connection_ID']=$childrenPidData['ID'];
                         if($childrenPoint){
                             $point['children'][]=$childrenPoint;
                         }
