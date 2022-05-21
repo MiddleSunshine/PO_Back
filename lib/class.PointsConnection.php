@@ -22,10 +22,11 @@ class PointsConnection extends Base{
     public function Update(){
         $PID=$this->get['PID'] ?? -1;
         $subPID=$this->get['SubPID'] ?? -1;
+        $this->post=json_decode($this->post,1);
         if ($PID<0 || $subPID<0){
             return self::returnActionResult($this->get,false,"参数错误");
         }
-        $this->updatePointsConnection($PID,$subPID);
+        $this->updatePointsConnection($PID,$subPID,$this->post['note']);
         return self::returnActionResult($this->get);
     }
 
@@ -84,18 +85,19 @@ class PointsConnection extends Base{
         return array_column($databaseData,'PID');
     }
 
-    public function updatePointsConnection($pid,$subPID){
+    public function updatePointsConnection($pid,$subPID,$note=''){
         $sql=sprintf("select * from %s where PID=%d and SubPID=%d",static::$table,$pid,$subPID);
         $connection=$this->pdo->getFirstRow($sql);
         if ($connection){
             return true;
         }
+        // 防止死循环
         $sql=sprintf("select * from %s where PID=%d and SubPID=%d",static::$table,$subPID,$pid);
         $connection=$this->pdo->getFirstRow($sql);
         if ($connection){
             return true;
         }
-        $sql=sprintf("insert into %s(PID,SubPID) value (%d,%d);",static::$table,$pid,$subPID);
+        $sql=sprintf("insert into %s(PID,SubPID,note) value (%d,%d,'%s');",static::$table,$pid,$subPID,$note);
         return $this->pdo->query($sql);
     }
 }
