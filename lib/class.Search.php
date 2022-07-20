@@ -27,6 +27,9 @@ class Search extends Base{
         unset($files[0]);
         unset($files[1]);
         $files=array_slice($files,0,$limit);
+        if (empty($files)){
+            return false;
+        }
         $sql=sprintf("select * from %s where ID in (%s);",Points::$table,implode(",",$files));
         $points=$this->pdo->getRows($sql,'ID');
         foreach ($files as $file){
