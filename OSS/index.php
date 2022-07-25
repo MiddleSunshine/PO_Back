@@ -18,6 +18,15 @@ switch ($method){
             echo CommonReturn(false,"Throwable",[$e->getMessage(),$e->getFile(),$e->getLine()]);
         }
         break;
+    case "Mysql":
+        try {
+            $SyncMysql=new SyncMysql();
+            $SyncMysql->mysqldumper();
+        }catch (Exception $e){
+            echo CommonReturn(false,"Exception",[$e->getMessage(),$e->getFile(),$e->getLine()]);
+        }catch (Throwable $e){
+            echo CommonReturn(false,"Throwable",[$e->getMessage(),$e->getFile(),$e->getLine()]);
+        }
     default:
         echo CommonReturn(false,"Method Not Exists");
 }
