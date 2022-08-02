@@ -1,6 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 require_once __DIR__.DIRECTORY_SEPARATOR."UploadFile.php";
+require_once __DIR__.DIRECTORY_SEPARATOR."SyncMysql.php";
 
 $method=$_GET['method'] ?? "";
 
@@ -12,6 +13,16 @@ switch ($method){
         try {
             $url=$uploadFile->Upload($bucket,$fileInfo['tmp_name'],time()."_".$fileInfo['name']);
             echo CommonReturn(true,"Success",['Url'=>$url]);
+        }catch (Exception $e){
+            echo CommonReturn(false,"Exception",[$e->getMessage(),$e->getFile(),$e->getLine()]);
+        }catch (Throwable $e){
+            echo CommonReturn(false,"Throwable",[$e->getMessage(),$e->getFile(),$e->getLine()]);
+        }
+        break;
+    case "Mysql":
+        try {
+            $SyncMysql=new SyncMysql();
+            $SyncMysql->mysqldumper();
         }catch (Exception $e){
             echo CommonReturn(false,"Exception",[$e->getMessage(),$e->getFile(),$e->getLine()]);
         }catch (Throwable $e){
