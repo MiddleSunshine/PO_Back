@@ -36,7 +36,7 @@ class WhiteBoard extends Base {
             return self::returnActionResult($this->post,false,"Project Not Exists");
         }
         $document=file_get_contents($projectPath);
-        empty($document) && $document=[];
+        empty($document) && $document=false;
         return self::returnActionResult(
             [
                 'document'=>$document
