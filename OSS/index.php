@@ -1,6 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 require_once __DIR__.DIRECTORY_SEPARATOR."UploadFile.php";
+require_once __DIR__.DIRECTORY_SEPARATOR."SyncMysql.php";
 
 $method=$_GET['method'] ?? "";
 
@@ -27,6 +28,7 @@ switch ($method){
         }catch (Throwable $e){
             echo CommonReturn(false,"Throwable",[$e->getMessage(),$e->getFile(),$e->getLine()]);
         }
+        break;
     default:
         echo CommonReturn(false,"Method Not Exists");
 }
