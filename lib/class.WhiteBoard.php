@@ -26,6 +26,24 @@ class WhiteBoard extends Base {
         );
     }
 
+    public function ProjectDetail(){
+        $this->post=json_decode($this->post,1);
+        $projectPath=$this->post['ProjectName'] ?? '';
+        if (empty($projectPath)){
+            return self::returnActionResult($this->post,false,"Param Error");
+        }
+        if (!file_exists($projectPath)){
+            return self::returnActionResult($this->post,false,"Project Not Exists");
+        }
+        $document=file_get_contents($projectPath);
+        empty($document) && $document=[];
+        return self::returnActionResult(
+            [
+                'document'=>$document
+            ]
+        );
+    }
+
     public function DeleteProject(){
         $this->post=json_decode($this->post,1);
         $filePath=$this->post['ProjectName'] ?? '';
