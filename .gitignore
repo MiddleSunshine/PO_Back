@@ -20,3 +20,7 @@ bookmarker/
 point_collect/
 
 SYNC_QUEUES/
+
+Worker/vendor/
+
+Worker/composer.lock
