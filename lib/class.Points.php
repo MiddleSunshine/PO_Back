@@ -34,14 +34,14 @@ class Points extends Base{
             }
             switch ($key){
                 case 'keyword':
-                    $where[]=sprintf("%s like '%%s%'",$key,$value);
+                    $where[]=sprintf("%s like '%s'",$key,$value);
                     break;
                 default:
                     $where[]=sprintf("%s='%s'",$key,$value);
             }
 
         }
-        $sql=sprintf("select * from %s where %s order by LastUpdateTime desc limit %d,%d;",static::$table,implode(',',$where),$page,$pageSize);
+        $sql=sprintf("select * from %s %s order by LastUpdateTime desc limit %d,%d;",static::$table,empty($where)?'':("where ".implode(',',$where)),$page,$pageSize);
         return self::returnActionResult(
             [
                 'Points'=>$this->pdo->getRows($sql)
