@@ -24,3 +24,5 @@ SYNC_QUEUES/
 Worker/vendor/
 
 Worker/composer.lock
+
+Worker/nohup.out
