@@ -3,6 +3,12 @@
 class ClockIn extends Base{
     public static $table="clock_in";
 
+    public function Now(){
+        return self::returnActionResult([
+            'date'=>date("Y-m-d H:i:s")
+        ]);
+    }
+
     public function List(){
         $sql=sprintf(
             "select * from %s where Year='%s' and Month='%s';",
@@ -37,6 +43,31 @@ class ClockIn extends Base{
         );
     }
 
+    public function UpdateClockIn(){
+        $this->post=json_decode($this->post,1);
+        $year=$this->post['Year'] ?? '';
+        $month=$this->post['Month'] ?? '';
+        $day=$this->post['Day'] ?? '';
+        $dateKey=$this->post['Key'] ?? '';
+        if (empty($year) || empty($month) || empty($day) || empty($dateKey)){
+            return self::returnActionResult($this->post,false,"Data Error");
+        }
+        $newDate=$this->post['new_date'];
+        if (!empty($newDate)){
+            $minTimestamp=strtotime(sprintf("%d-%d-%d 00:00:00",$year,$month,$day));
+            $maxTimestamp=strtotime(sprintf("%d-%d-%d 23:59:59",$year,$month,$day));
+            $newDateTimestamp=strtotime($newDate);
+            if ($newDateTimestamp<$minTimestamp || $newDateTimestamp>$maxTimestamp){
+                return self::returnActionResult($this->post,false,"New Date Error");
+            }
+        }
+        $sql=sprintf("update clock_in set %s='%s' where Year='%d' and Month='%d' and Day='%d';",$dateKey,$newDate,$year,$month,$day);
+        $this->pdo->query($sql);
+        return self::returnActionResult([
+            $sql
+        ]);
+    }
+
     public function StartWork(){
         $data=[
             'Year'=>date("Y"),
@@ -47,12 +78,12 @@ class ClockIn extends Base{
         $record=$this->checkRecordExists($data['Year'],$data['Month'],$data['Day']);
         if ($record){
             return self::returnActionResult(
-                [],
+                $data,
                 false,
                 "Checked"
             );
         }
-        $this->handleSql($data,0,'ID');
+        $this->handleSql($data,0);
         return self::returnActionResult();
     }
     public function FinishWork(){
