@@ -23,6 +23,32 @@ class Points extends Base{
 
     public $mindMapConnection=[];
 
+    public function RecentPoints(){
+        $this->post=json_decode($this->post,1);
+        $where=[];
+        $page=$this->get['Page'] ?? 1;
+        $pageSize=$this->get['PageSize'] ?? 100;
+        foreach ($this->post as $key=>$value){
+            if (empty($value)){
+                continue;
+            }
+            switch ($key){
+                case 'keyword':
+                    $where[]=sprintf("%s like '%s'",$key,$value);
+                    break;
+                default:
+                    $where[]=sprintf("%s='%s'",$key,$value);
+            }
+
+        }
+        $sql=sprintf("select * from %s %s order by LastUpdateTime desc limit %d,%d;",static::$table,empty($where)?'':("where ".implode(',',$where)),$page,$pageSize);
+        return self::returnActionResult(
+            [
+                'Points'=>$this->pdo->getRows($sql)
+            ]
+        );
+    }
+
     public function Index(){
         $pid=$this->get["id"] ?? 0;
         $this->post=json_decode($this->post,1);
