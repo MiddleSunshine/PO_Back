@@ -1,3 +1,0 @@
-```bash
-export EDITOR=vim
-```
