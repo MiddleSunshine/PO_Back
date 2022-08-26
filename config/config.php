@@ -21,7 +21,7 @@ define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
 define("ES_SERVER","http://172.19.0.9:9200");
 define("AUTH_TOKEN",'h48hsihoshohsjijop803i0josnohog');
 
-function __autoload($class){
+function __autoload2($class){
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
     if (file_exists($fileName)){
         require_once $fileName;
@@ -32,7 +32,7 @@ function __autoload($class){
     }
 }
 
-// spl_autoload_register("__autoload2");
+ spl_autoload_register("__autoload2");
 
 if(defined("BOOK_MARK_INDEX") && !is_dir(BOOK_MARK_INDEX)){
     mkdir(BOOK_MARK_INDEX);
