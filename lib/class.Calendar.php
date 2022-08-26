@@ -1,8 +1,10 @@
 <?php
 
 class Calendar extends Base{
+    protected $authCheck=false;
     public function InitCalendar(){
-        $startDate=date("Y-m-01");
+        $this->post=json_decode($this->post,1);
+        $startDate=empty($this->post['StartTime'])?date("Y-m-01"):$this->post['StartTime'];
         $endDate=date("Y-m-d",strtotime(sprintf("%s +1 month -1 day",$startDate)));
         $returnData=[];
         $startTimeStamp=strtotime($startDate);
