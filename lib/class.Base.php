@@ -17,7 +17,7 @@ class Base
         $this->em_getallheaders();
         $this->parse_auth();
         if (!empty($this->authToken) || !$this->authCheck) {
-//            $this->pdo = new MysqlPdo();
+            $this->pdo = new MysqlPdo();
         }
     }
 
