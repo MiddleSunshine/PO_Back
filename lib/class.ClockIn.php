@@ -24,7 +24,7 @@ class ClockIn extends Base{
             if (!empty($record['working_hours']) && !empty($record['off_work_time'])){
                 $askForLeavelTime=$record['Ask_For_Leave'] ?? 0;
                 $record['Result']=round(
-                    ((strtotime($record['off_work_time'])-strtotime($record['working_hours']))-(9+$askForLeavelTime)*60*60)/60,
+                    ((strtotime($record['off_work_time'])-strtotime($record['working_hours']))-(9-$askForLeavelTime)*60*60)/60,
                     1);
             }else{
                 $record['Result']=0;
