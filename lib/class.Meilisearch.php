@@ -24,7 +24,7 @@ class Meilisearch extends ElasticSearch {
 
     public function DeleteDocument($index, $ID)
     {
-        // todo
+        // todo 这里找一下文档内容
     }
 
     public function SearchMultipleFileds($index, $search, $source = 'ID')
