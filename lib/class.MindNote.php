@@ -49,4 +49,17 @@ class MindNote extends Base{
         $returnData[self::EDGE_KEY]=$settings[self::EDGE_KEY];
         return self::returnActionResult($returnData);
     }
+
+    public function IsMindNote(){
+        $pid=$this->get['PID'] ?? -1;
+        if (empty($pid)){
+            return self::returnActionResult([],false,"Param Error");
+        }
+        $filePath=File::getFilePath($pid).self::MIND_NOTE_FILE_NAME;
+        return self::returnActionResult(
+            [
+                'HasFile'=>file_exists($filePath)?'YES':'NO'
+            ]
+        );
+    }
 }
