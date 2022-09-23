@@ -26,8 +26,8 @@ function __autoload2($class){
     if (file_exists($fileName)){
         require_once $fileName;
     }else{
-        echo $fileName.PHP_EOL;
-        echo "not exists".PHP_EOL;
+//        echo $fileName.PHP_EOL;
+//        echo "not exists".PHP_EOL;
 //        exit();
     }
 }
