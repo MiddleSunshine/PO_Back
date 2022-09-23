@@ -20,6 +20,7 @@ class Meilisearch extends ElasticSearch {
     public function StoreDocument($index, $ID, $storeData)
     {
         $this->client->index($index)->addDocuments($storeData);
+        return true;
     }
 
     public function DeleteDocument($index, $ID)
@@ -30,7 +31,14 @@ class Meilisearch extends ElasticSearch {
     public function SearchMultipleFileds($index, $search, $source = 'ID')
     {
         $searchResult=$this->client->index($index)->search($search);
-
+        $returnData=[];
+        foreach ($searchResult['hits'] as $item){
+            if (empty($item['id'])){
+                continue;
+            }
+            $returnData[]=new SearchResult($item,$item['id']);
+        }
+        return $returnData;
     }
 
     public function SearchOneField($index, $field, $keyword, $source = 'ID')

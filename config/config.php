@@ -18,7 +18,7 @@ define("POINT_COLLECT_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."point_collect".DIRE
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
 
-define("ES_SERVER","http://172.19.0.9:9200");
+define("ES_SERVER","http://127.0.0.1:7700");
 define("AUTH_TOKEN",'h48hsihoshohsjijop803i0josnohog');
 
 function __autoload2($class){
@@ -28,7 +28,7 @@ function __autoload2($class){
     }else{
         echo $fileName.PHP_EOL;
         echo "not exists".PHP_EOL;
-        exit();
+//        exit();
     }
 }
 

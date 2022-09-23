@@ -8,7 +8,7 @@ class Base
     protected $post;
     public $pdo;
     protected $authToken;
-    protected $authCheck = true;
+    protected $authCheck = false;
 
     public function __construct($get = [], $post = '')
     {
