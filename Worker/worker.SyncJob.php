@@ -14,7 +14,7 @@ class SyncJob
 
     public function sendDataToElasticSearch()
     {
-        $cmd=sprintf("/opt/bitnami/php/bin/php %s/ElaticSearch.php --method=SyncData",INCLUDE_ROOT);
+        $cmd=sprintf("/opt/bitnami/php/bin/php %s/Meilisearch.php --method=SyncData",INCLUDE_ROOT);
         exec($cmd);
     }
 }

@@ -179,7 +179,7 @@ class Points extends Base{
         foreach ($points as &$point){
             $point['Highlight']=[];
             if (isset($searchResult[$point['ID']])){
-                $highlight=$searchResult[$point['ID']]['Highlight'];
+                $highlight=$searchResult[$point['ID']]['Highlight'] ?? [];
                 foreach ($highlight as $field=>&$items){
                     $items=implode(PHP_EOL.PHP_EOL,$items);
                     $highlight[$field]=$items;

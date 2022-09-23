@@ -1,6 +1,7 @@
 <?php
 
 class WhiteBoard extends Base {
+    protected $authCheck=false;
     public $whiteboardFileType='json';
 
     public function Projects(){

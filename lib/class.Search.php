@@ -2,10 +2,10 @@
 
 class Search extends Base{
     /**
-     * @var $elasticSearch ElasticSearch
+     * @var $elasticSearch Meilisearch
      */
     public $elasticSearch;
-    private $elasticSearchIndex="points";
+    private $elasticSearchIndex="Points";
     protected $error;
     private $todoQueue;
     private $failQueue;
@@ -82,22 +82,14 @@ class Search extends Base{
         }
         $searchResult=$this->elasticSearch->SearchMultipleFileds(
             $this->elasticSearchIndex,
-            [
-                self::MD_FILE_KEY=>$keyword,
-                'note'=>$keyword,
-                'keyword'=>$keyword
-            ]
+            $keyword
         );
-        if (!$searchResult){
-            $this->error=$this->elasticSearch->getError();
-            return false;
-        }
         $returnData=[];
-        $searchResult=json_decode($searchResult,1);
-        foreach ($searchResult['hits']['hits'] as $hit){
-            $returnData[$hit['_source']['ID']]=[
-                'Highlight'=>$hit['highlight']
-            ];
+        foreach ($searchResult as $searchResultInstance){
+            /**
+             * @var $searchResultInstance SearchResult
+             */
+            $returnData[$searchResultInstance->id]=[];
         }
         return $returnData;
     }
@@ -148,6 +140,7 @@ class Search extends Base{
             mkdir($this->failQueue);
         }
         // 初始化elaticsearch
-        $this->elasticSearch=new ElasticSearch();
+//        $this->elasticSearch=new ElasticSearch();
+        $this->elasticSearch=new Meilisearch();
     }
 }

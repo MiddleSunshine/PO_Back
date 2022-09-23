@@ -1,6 +1,9 @@
 {
     "require": {
         "workerman/workerman": "^4.0",
-        "workerman/crontab": "^1.0"
+        "workerman/crontab": "^1.0",
+        "meilisearch/meilisearch-php": "^0.24.2",
+        "guzzlehttp/guzzle": "^7.5",
+        "http-interop/http-factory-guzzle": "^1.0"
     }
 }

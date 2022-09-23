@@ -18,20 +18,21 @@ define("POINT_COLLECT_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."point_collect".DIRE
 define("LocalFilePath","/Users/yangqingxian/Documents/PO/PO/back/php/PO_Back/md");
 define("SummaryFilePath",INDEX_FILE.DIRECTORY_SEPARATOR."summary");
 
-define("ES_SERVER","http://172.19.0.9:9200");
+define("ES_SERVER","http://127.0.0.1:7700");
+define("AUTH_TOKEN",'h48hsihoshohsjijop803i0josnohog');
 
-function __autoload($class){
+function __autoload2($class){
     $fileName=INDEX_FILE.DIRECTORY_SEPARATOR."lib".DIRECTORY_SEPARATOR."class.".$class.".php";
     if (file_exists($fileName)){
         require_once $fileName;
     }else{
         echo $fileName.PHP_EOL;
         echo "not exists".PHP_EOL;
-        exit();
+//        exit();
     }
 }
 
-// spl_autoload_register("__autoload2");
+ spl_autoload_register("__autoload2");
 
 if(defined("BOOK_MARK_INDEX") && !is_dir(BOOK_MARK_INDEX)){
     mkdir(BOOK_MARK_INDEX);
