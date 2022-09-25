@@ -4,13 +4,13 @@
 header("Access-Control-Allow-Origin: *");
 ini_set('date.timezone','Asia/Shanghai');
 define("PROD_DB_NAME","PO");
-define("PROD_DB_HOST","172.19.0.8");
+define("PROD_DB_HOST","127.0.0.1");
 define("PROD_DB_USER","root");
 define("PROD_DB_PASS","1234qwer");
 define("PROD_DB_SOCKET","");
 define("DEBUG_MODE",true);
 define("MYSQL_SET_NAMES","utf8");
-define('TIME_ZONE','Asia/Shanghai');
+//define('TIME_ZONE','Asia/Shanghai');
 define("INDEX_FILE",dirname(__DIR__));
 define("MD_FILE_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."md".DIRECTORY_SEPARATOR);
 define("BOOK_MARK_INDEX",INDEX_FILE.DIRECTORY_SEPARATOR."bookmarker".DIRECTORY_SEPARATOR);
@@ -26,9 +26,15 @@ function __autoload2($class){
     if (file_exists($fileName)){
         require_once $fileName;
     }else{
+<<<<<<< Updated upstream
 //        echo $fileName.PHP_EOL;
 //        echo "not exists".PHP_EOL;
 //        exit();
+=======
+        echo $fileName.PHP_EOL;
+        echo "not exists".PHP_EOL;
+        exit();
+>>>>>>> Stashed changes
     }
 }
 
