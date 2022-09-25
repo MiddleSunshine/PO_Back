@@ -26,15 +26,6 @@ function __autoload2($class){
     if (file_exists($fileName)){
         require_once $fileName;
     }else{
-<<<<<<< Updated upstream
-//        echo $fileName.PHP_EOL;
-//        echo "not exists".PHP_EOL;
-//        exit();
-=======
-        echo $fileName.PHP_EOL;
-        echo "not exists".PHP_EOL;
-        exit();
->>>>>>> Stashed changes
     }
 }
 
