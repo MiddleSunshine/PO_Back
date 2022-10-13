@@ -14,10 +14,10 @@ class MindNote extends Base{
         $nodes=$this->post['nodes'] ?? [];
         $edges=$this->post['edges'] ?? [];
         $filePath=File::getFilePath($pid).self::MIND_NOTE_FILE_NAME;
-        file_put_contents($filePath,[
+        file_put_contents($filePath,json_encode([
             self::NODE_KEY=>$nodes,
             self::EDGE_KEY=>$edges
-        ]);
+        ]));
         return self::returnActionResult();
     }
 
