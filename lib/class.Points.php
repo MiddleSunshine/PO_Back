@@ -242,6 +242,10 @@ class Points extends Base{
         return self::returnActionResult($this->post);
     }
 
+    public function NewPoint(){
+        return $this->Save(false);
+    }
+
     public function Save($checkPid=true){
         $this->post=json_decode($this->post,1);
         $point=$this->post['point'];
@@ -285,6 +289,7 @@ class Points extends Base{
         $search->addQueue($point['ID']);
         return self::returnActionResult([
             'ID'=>$point['ID'],
+            'Point'=>$point,
             'Status'=>$point['status']
         ]);
     }
