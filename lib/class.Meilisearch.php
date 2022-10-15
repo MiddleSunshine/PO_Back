@@ -32,11 +32,11 @@ class Meilisearch extends ElasticSearch {
     {
         $searchResult=$this->client->index($index)->search($search);
         $returnData=[];
-        foreach ($searchResult['hits'] as $item){
-            if (empty($item['id'])){
+        foreach ($searchResult->getHits() as $item){
+            if (empty($item['ID'])){
                 continue;
             }
-            $returnData[]=new SearchResult($item,$item['id']);
+            $returnData[]=new SearchResult($item,$item['ID']);
         }
         return $returnData;
     }

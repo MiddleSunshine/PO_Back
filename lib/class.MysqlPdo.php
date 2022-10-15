@@ -51,10 +51,10 @@ class MysqlPdo
                 $this->pdo->exec("SET names '" . MYSQL_SET_NAMES . "'");
             }
             // navicat 自动同步的变量
-            $compatibility56=$this->getFirstRow("show variables like '%show_compatibility_56%';");
-            if ($compatibility56['Value']!='ON'){
-                $this->pdo->exec("set global show_compatibility_56=on;");
-            }
+//            $compatibility56=$this->getFirstRow("show variables like '%show_compatibility_56%';");
+//            if ($compatibility56['Value']!='ON'){
+//                $this->pdo->exec("set global show_compatibility_56=on;");
+//            }
         }
     }
 
