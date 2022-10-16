@@ -45,6 +45,10 @@ class MindNote extends Base
             if (isset($node['data']['ID'])) {
                 $sql = sprintf("select * from %s where ID=%d;", $node['data']['table'], $node['data']['ID']);
                 $data = $this->pdo->getFirstRow($sql);
+                $node['data']=array_merge(
+                    $node['data'],
+                    $data
+                );
                 switch ($node['data']['table']) {
                     case Points::$table:
                         $data['FileContent'] = File::getFileContent($node['data']['ID'], $data['file']);
