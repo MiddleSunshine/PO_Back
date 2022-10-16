@@ -40,7 +40,7 @@ class MindNote extends Base{
         foreach ($settings[self::NODE_KEY] as &$node){
             // 从数据库重新同步一次数据
             if (isset($node['data']['ID'])){
-                $sql=sprintf("select * from %s where ID=%d;",$node['type'],$node['data']['ID']);
+                $sql=sprintf("select * from %s where ID=%d;",$node['data']['table'],$node['data']['ID']);
                 $data=$this->pdo->getFirstRow($sql);
                 $node['data']=$data;
             }
