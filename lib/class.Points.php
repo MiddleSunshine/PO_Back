@@ -287,6 +287,7 @@ class Points extends Base{
         }
         $search=new Search();
         $search->addQueue($point['ID']);
+        $point=$this->getPointDetail($point['ID']);
         return self::returnActionResult([
             'ID'=>$point['ID'],
             'Point'=>$point,
