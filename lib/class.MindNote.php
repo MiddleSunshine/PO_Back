@@ -20,6 +20,8 @@ class MindNote extends Base
             self::NODE_KEY => $nodes,
             self::EDGE_KEY => $edges
         ]));
+        $sql=sprintf("update %s set url='/MindNote/%d' where ID=%d;",Points::$table,$pid,$pid);
+        $this->pdo->query($sql);
         return self::returnActionResult();
     }
 
