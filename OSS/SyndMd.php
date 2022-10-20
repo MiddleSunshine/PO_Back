@@ -31,6 +31,3 @@ class SyndMd
         return $files;
     }
 }
-
-$sync=new SyndMd();
-$sync->syncMd();
