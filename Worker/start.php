@@ -23,12 +23,7 @@ $cronJobWorker->onWorkerStart = function () {
         "0 1 13 * * *", function () {
         $cronJob = new CronJob();
         $cronJob->mysqlDumper();
-    }
-    );
-    new Workerman\Crontab\Crontab(
-        "0 1 23 * * 0", function () {
-            $backUp=new SyndMd();
-            $backUp->syncMd();
+        $cronJob->backUpMdFileContent();
     }
     );
 };
