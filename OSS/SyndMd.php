@@ -9,7 +9,7 @@ class SyndMd
         $filePath=__DIR__.DIRECTORY_SEPARATOR."..".DIRECTORY_SEPARATOR;
         $preFilePath=$filePath."md_back_up".DIRECTORY_SEPARATOR;
         if (!is_dir($preFilePath)){
-            mkdir($preFilePath,'777');
+            mkdir($preFilePath);
         }
         $storeFilePath=$preFilePath.date("Y-m-d").".tar";
         $cmd=sprintf(" tar -cvf %s %s",$storeFilePath,$filePath."md");
