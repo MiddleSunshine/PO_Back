@@ -2,21 +2,54 @@
 
 class Login extends Base
 {
+    protected $loginPath='';
+    public function __construct($get = [], $post = '')
+    {
+        parent::__construct($get, $post);
+        $this->loginPath=INCLUDE_ROOT."LoginUsers".DIRECTORY_SEPARATOR;
+    }
+
+    private $users=[
+        [
+            'UserName'=>'admin',
+            'Password'=>'admin'
+        ]
+    ];
     protected $authCheck = false;
     public function PasswordCheck(){
         $this->post=json_decode($this->post,1);
-        $password=date("dnH");
+        $inputUserName=$this->post['UserName'];
+        $inputPassword=$this->post['Password'];
         if (empty($this->post['password'])){
             return self::returnActionResult([],false,"Please input the password");
         }
-        if ($this->post['password']!=$password){
-            return self::returnActionResult([],false,"Password Error : ".$password);
+        foreach ($this->users as $user){
+            if ($user['UserName']==$inputUserName && $user['Password']==$inputPassword){
+                $token=md5($inputUserName."_".$inputPassword."_".date("Y-m-d"));
+                $this->loginSuccess($token);
+                return self::returnActionResult(
+                    [
+                        'Token'=>$token
+                    ]
+                );
+            }
         }
-        $time=time();
         return self::returnActionResult(
-            [
-                'Token'=>$time."_".$this->create_password($time)
-            ]
+            [],
+            false,
+            'Username or Password error'
         );
+    }
+
+    public function isLogin($token){
+        return file_exists($this->loginPath.$token);
+    }
+
+    public function loginSuccess($token){
+
+        if (!is_dir($this->loginPath)){
+            mkdir($this->loginPath);
+        }
+        file_put_contents($this->loginPath.$token,date("Y-m-d H:i:s").PHP_EOL,FILE_APPEND);
     }
 }
