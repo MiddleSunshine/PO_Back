@@ -9,6 +9,7 @@ class Base
     public $pdo;
     protected $authToken;
     protected $authCheck = false;
+    protected $doNotCheckLogin=true;
 
     public function __construct($get = [], $post = '')
     {
@@ -16,7 +17,7 @@ class Base
         $this->post = $post;
         $this->em_getallheaders();
         $this->parse_auth();
-        if (!empty($this->authToken) || !$this->authCheck) {
+        if ($this->authCheck || !$this->doNotCheckLogin) {
             $this->pdo = new MysqlPdo();
         }
     }
@@ -190,21 +191,13 @@ class Base
 
     public function parse_auth()
     {
-        list($time, $sign) = explode("_", $this->authToken);
-        $now = time();
-        // time 参数不对
-        $timestamp = intval($time);
-        if (empty($now) || $timestamp > $now || ($now - $timestamp) > (3 * 60 * 60)) {
-            $this->authToken = '';
-            return false;
+        if (!empty($this->authToken)){
+            $login=new Login();
+            if ($login->isLogin($this->authToken)){
+                $this->authCheck=true;
+            }else{
+                $this->authToken='';
+            }
         }
-        $localSign = $this->create_password($time);
-        if ($sign != $localSign) {
-            $this->authToken = '';
-        }
-    }
-
-    public function create_password($time){
-        return md5($time . AUTH_TOKEN);
     }
 }

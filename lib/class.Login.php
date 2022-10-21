@@ -2,6 +2,13 @@
 
 class Login extends Base
 {
+    protected $loginPath='';
+    public function __construct($get = [], $post = '')
+    {
+        parent::__construct($get, $post);
+        $this->loginPath=INCLUDE_ROOT."LoginUsers".DIRECTORY_SEPARATOR;
+    }
+
     private $users=[
         [
             'UserName'=>'admin',
@@ -18,9 +25,11 @@ class Login extends Base
         }
         foreach ($this->users as $user){
             if ($user['UserName']==$inputUserName && $user['Password']==$inputPassword){
+                $token=md5($inputUserName."_".$inputPassword."_".date("Y-m-d"));
+                $this->loginSuccess($token);
                 return self::returnActionResult(
                     [
-                        'Token'=>md5($inputUserName."_".$inputPassword)
+                        'Token'=>$token
                     ]
                 );
             }
@@ -30,5 +39,17 @@ class Login extends Base
             false,
             'Username or Password error'
         );
+    }
+
+    public function isLogin($token){
+        return file_exists($this->loginPath.$token);
+    }
+
+    public function loginSuccess($token){
+
+        if (!is_dir($this->loginPath)){
+            mkdir($this->loginPath);
+        }
+        file_put_contents($this->loginPath.$token,date("Y-m-d H:i:s").PHP_EOL,FILE_APPEND);
     }
 }
