@@ -6,7 +6,7 @@ class File extends Base{
     public static function getFilePath($pid){
         return MD_FILE_INDEX.$pid.DIRECTORY_SEPARATOR;
     }
-    public static function storeFile($pid,$fileName,&$storeContent){
+    public static function storeFile($pid,$fileName,&$storeContent,$addFileType=true){
         $filePath=self::getFilePath($pid);
         if (!is_dir($filePath)){
             mkdir($filePath);
@@ -14,7 +14,7 @@ class File extends Base{
         if (empty($fileName)){
             return false;
         }
-        $fileName=$filePath.$fileName.".".static::$fileType;
+        $fileName=$filePath.$fileName.($addFileType?(".".static::$fileType):'');
         file_put_contents($fileName,$storeContent);
         return file_exists($fileName);
     }
