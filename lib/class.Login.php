@@ -6,7 +6,7 @@ class Login extends Base
     public function __construct($get = [], $post = '')
     {
         parent::__construct($get, $post);
-        $this->loginPath=INCLUDE_ROOT."LoginUsers".DIRECTORY_SEPARATOR;
+        $this->loginPath=INDEX_FILE."LoginUsers".DIRECTORY_SEPARATOR;
     }
 
     private $users=[

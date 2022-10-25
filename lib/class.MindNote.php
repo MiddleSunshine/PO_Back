@@ -15,11 +15,11 @@ class MindNote extends Base
         }
         $nodes = $this->post['nodes'] ?? [];
         $edges = $this->post['edges'] ?? [];
-        $filePath = File::getFilePath($pid) . self::MIND_NOTE_FILE_NAME;
-        file_put_contents($filePath, json_encode([
+        $storeData=json_encode([
             self::NODE_KEY => $nodes,
             self::EDGE_KEY => $edges
-        ]));
+        ]);
+        File::storeFile($pid,self::MIND_NOTE_FILE_NAME,$storeData,false);
         $sql=sprintf("update %s set url='/MindNote/%d' where ID=%d;",Points::$table,$pid,$pid);
         $this->pdo->query($sql);
         return self::returnActionResult();

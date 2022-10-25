@@ -17,7 +17,7 @@ class Base
         $this->post = $post;
         $this->em_getallheaders();
         $this->parse_auth();
-        if ($this->authCheck || !$this->doNotCheckLogin) {
+        if ($this->authCheck || $this->doNotCheckLogin) {
             $this->pdo = new MysqlPdo();
         }
     }
