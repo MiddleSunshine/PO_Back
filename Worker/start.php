@@ -6,7 +6,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . DIRECTORY_SEPARATOR . "worker.SyncJob.php";
 require_once __DIR__ . DIRECTORY_SEPARATOR . "worker.CronJob.php";
 
-define("INCLUDE_ROOT", dirname(__DIR__));
+//define("INCLUDE_ROOT", dirname(__DIR__));
 date_default_timezone_set("Asia/Shanghai");
 
 printf("%sStart @%s%s", PHP_EOL, date("Y-m-d H:i:s"), PHP_EOL);

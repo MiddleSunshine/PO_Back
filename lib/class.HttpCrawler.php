@@ -221,7 +221,7 @@ class HttpCrawler
         }
 
         if(isset($_para["stderr_temp"])){
-            $verbose = fopen(INCLUDE_ROOT."temp.txt", 'w+');
+            $verbose = fopen(INDEX_FILE."temp.txt", 'w+');
             curl_setopt($ch, CURLOPT_STDERR, $verbose);
         }
 
