@@ -20,8 +20,8 @@ class Login extends Base
         $this->post=json_decode($this->post,1);
         $inputUserName=$this->post['UserName'];
         $inputPassword=$this->post['Password'];
-        if (empty($this->post['password'])){
-            return self::returnActionResult([],false,"Please input the password");
+        if (empty($inputPassword) || empty($inputUserName)){
+            return self::returnActionResult([],false,"Please set the data.");
         }
         foreach ($this->users as $user){
             if ($user['UserName']==$inputUserName && $user['Password']==$inputPassword){
