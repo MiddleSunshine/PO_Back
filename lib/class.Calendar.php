@@ -1,7 +1,6 @@
 <?php
 
 class Calendar extends Base{
-    protected $authCheck=false;
     public function InitCalendar(){
         $this->post=json_decode($this->post,1);
         $startDate=empty($this->post['StartTime'])?date("Y-m-01"):$this->post['StartTime'];
