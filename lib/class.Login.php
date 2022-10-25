@@ -7,6 +7,9 @@ class Login extends Base
     {
         parent::__construct($get, $post);
         $this->loginPath=INDEX_FILE."LoginUsers".DIRECTORY_SEPARATOR;
+        if (!is_dir($this->loginPath)){
+            mkdir($this->loginPath);
+        }
     }
 
     private $users=[
