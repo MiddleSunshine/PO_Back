@@ -1,7 +1,7 @@
 <?php
 
 class ClockIn extends Base{
-    public $authCheck=false;
+    public $doNotCheckLogin=true;
     public static $table="clock_in";
 
     public function Now(){

@@ -9,7 +9,7 @@ class Base
     public $pdo;
     protected $authToken;
     protected $authCheck = false;
-    protected $doNotCheckLogin=true;
+    protected $doNotCheckLogin=false;
 
     public function __construct($get = [], $post = '')
     {
@@ -196,6 +196,7 @@ class Base
             if ($login->isLogin($this->authToken)){
                 $this->authCheck=true;
             }else{
+                $this->authCheck=false;
                 $this->authToken='';
             }
         }
