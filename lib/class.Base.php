@@ -187,6 +187,9 @@ class Base
     public function em_getallheaders()
     {
         $this->authToken = $this->get['sign'] ?? '';
+        if (empty($this->authToken)){
+            $this->authToken=$_COOKIE[Login::AUTH_COOKIE_KEY];
+        }
     }
 
     public function parse_auth()

@@ -2,6 +2,7 @@
 
 class Login extends Base
 {
+    const AUTH_COOKIE_KEY='Auth_Sign';
     protected $loginPath='';
     public function __construct($get = [], $post = '')
     {
@@ -30,6 +31,7 @@ class Login extends Base
             if ($user['UserName']==$inputUserName && $user['Password']==$inputPassword){
                 $token=md5($inputUserName."_".$inputPassword."_".date("Y-m-d"));
                 $this->loginSuccess($token);
+                setcookie(self::AUTH_COOKIE_KEY,$token);
                 return self::returnActionResult(
                     [
                         'Token'=>$token
