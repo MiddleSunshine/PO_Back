@@ -187,8 +187,8 @@ class Base
     public function em_getallheaders()
     {
         $this->authToken = $this->get['sign'] ?? '';
-        if (empty($this->authToken)){
-            $this->authToken=$_COOKIE[Login::AUTH_COOKIE_KEY];
+        if (empty($this->authToken) && defined('Login_Token')){
+            $this->authToken=Login_Token;
         }
     }
 
@@ -198,6 +198,7 @@ class Base
             $login=new Login();
             if ($login->isLogin($this->authToken)){
                 $this->authCheck=true;
+                define('Login_Token',$this->authToken);
             }else{
                 $this->authCheck=false;
                 $this->authToken='';
