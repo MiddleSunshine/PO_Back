@@ -15,8 +15,12 @@ class Base
     {
         $this->get = $get;
         $this->post = $post;
-        $this->em_getallheaders();
-        $this->parse_auth();
+        if (!defined('Login_Token')){
+            $this->em_getallheaders();
+            $this->parse_auth();
+        }else{
+            $this->authCheck=true;
+        }
         if ($this->authCheck || $this->doNotCheckLogin) {
             $this->pdo = new MysqlPdo();
         }
