@@ -15,8 +15,12 @@ class Base
     {
         $this->get = $get;
         $this->post = $post;
-        $this->em_getallheaders();
-        $this->parse_auth();
+        if (!defined('Login_Token')){
+            $this->em_getallheaders();
+            $this->parse_auth();
+        }else{
+            $this->authCheck=true;
+        }
         if ($this->authCheck || $this->doNotCheckLogin) {
             $this->pdo = new MysqlPdo();
         }
@@ -187,6 +191,9 @@ class Base
     public function em_getallheaders()
     {
         $this->authToken = $this->get['sign'] ?? '';
+        if (empty($this->authToken) && defined('Login_Token')){
+            $this->authToken=Login_Token;
+        }
     }
 
     public function parse_auth()
@@ -195,6 +202,7 @@ class Base
             $login=new Login();
             if ($login->isLogin($this->authToken)){
                 $this->authCheck=true;
+                define('Login_Token',$this->authToken);
             }else{
                 $this->authCheck=false;
                 $this->authToken='';
