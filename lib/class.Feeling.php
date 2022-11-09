@@ -13,12 +13,14 @@ class Feeling extends Base{
         if (empty($this->post['Type'])){
             return self::returnActionResult($this->post,false,'Please select the mode');
         }
+        $this->post['imageUrls']=empty($this->post['imageUrls'])?'[]':json_encode($this->post['imageUrls']);
         $this->handleSql($this->post,0);
         return self::returnActionResult($this->post);
     }
 
     public function preSave()
     {
+        $this->post['imageUrls']=empty($this->post['imageUrls'])?'[]':json_encode($this->post['imageUrls']);
         $this->post['LastUpdateTime']=date("Y-m-d H:i:s");
     }
 
@@ -31,6 +33,7 @@ class Feeling extends Base{
         $index=-1;
         $date=[];
         foreach ($feelings as $felling){
+            $felling['imageUrls']=empty($felling['imageUrls'])?[]:json_decode($felling['imageUrls'],1);
             $key=date("Y-m-d",strtotime($felling['AddTime']));
             if (!isset($date[$key])){
                 $index++;
