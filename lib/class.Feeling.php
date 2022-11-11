@@ -10,7 +10,7 @@ class Feeling extends Base{
 
     public function Save(){
         $this->post=json_decode($this->post,1);
-        if (empty($this->post['Type'])){
+        if (empty($this->post['type'])){
             return self::returnActionResult($this->post,false,'Please select the mode');
         }
         $this->post['imageUrls']=empty($this->post['imageUrls'])?'[]':json_encode($this->post['imageUrls']);
