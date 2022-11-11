@@ -29,21 +29,22 @@ class Feeling extends Base{
         $endTime=empty($this->get['EndTime'])?date("Y-m-d H:i:s"):$this->get['EndTime'];
         $sql=sprintf("select * from %s where AddTime between '%s' and '%s' order by ID desc;",self::$table,$startTime,$endTime);
         $feelings=$this->pdo->getRows($sql);
-        $returnData=[];
-        $index=-1;
-        $date=[];
+        $storeData=$returnData=[];
         foreach ($feelings as $felling){
             $felling['imageUrls']=empty($felling['imageUrls'])?[]:json_decode($felling['imageUrls'],1);
-            $key=date("Y-m-d",strtotime($felling['AddTime']));
-            if (!isset($date[$key])){
-                $index++;
-                $returnData[$index]=[
-                    'label'=>$key,
-                    'feelings'=>[]
-                ];
-            }
-            $returnData[$index]['feelings'][]=$felling;
+            $felling['AddTimeStamp']=strtotime($felling['AddTime']);
+            $key=date("Y-m-d",$felling['AddTimeStamp']);
+            !isset($storeData[$key]) && $storeData[$key]=[
+                'date'=>$key,
+                'feelings'=>[]
+            ];
+            $storeData[$key]['feelings'][$felling['ID']]=$felling;
         }
+        foreach ($storeData as $item){
+            $item['feelings']=array_values(array_reverse($item['feelings']));
+            $returnData[]=$item;
+        }
+        
         return self::returnActionResult($returnData);
     }
 }
