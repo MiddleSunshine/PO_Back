@@ -212,7 +212,7 @@ class Base
 
     public static function getLocalDateN($timestamp){
         $return='';
-        switch (date('N',strtotime($timestamp))){
+        switch (date('N',$timestamp)){
             case 1:
                 $return='一';
                 break;
