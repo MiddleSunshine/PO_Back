@@ -35,7 +35,7 @@ class Feeling extends Base{
             $felling['AddTimeStamp']=strtotime($felling['AddTime']);
             $key=date("Y-m-d",$felling['AddTimeStamp']);
             !isset($storeData[$key]) && $storeData[$key]=[
-                'date'=>$key,
+                'date'=>$key." (周".static::getLocalDateN($felling['AddTimeStamp']).")",
                 'feelings'=>[]
             ];
             $storeData[$key]['feelings'][$felling['ID']]=$felling;
