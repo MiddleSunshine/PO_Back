@@ -11,10 +11,6 @@ class FindSearch extends ElasticSearch{
             chmod($this->storeDataFilePath,0777);
         }
         $this->tempStoreResult=INDEX_FILE.DIRECTORY_SEPARATOR."findResult.txt";
-        if (!is_dir($this->tempStoreResult)){
-            mkdir($this->tempStoreResult);
-            chmod($this->tempStoreResult,0777);
-        }
     }
 
     public function NewDatabase($databseName)
