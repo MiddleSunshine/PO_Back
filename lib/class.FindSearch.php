@@ -28,7 +28,10 @@ class FindSearch extends ElasticSearch{
         $searchResult=exec($cmd);
         $returnData=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
-            list($fileName,$highLisght)=explode(':',$item);
+            $searchEachPart=explode(':',$item);
+            $fileName=$searchEachPart[0];
+            unset($searchEachPart[0]);
+            $highLisght=implode(':',$searchEachPart);
             $fileName=explode(DIRECTORY_SEPARATOR,$fileName);
             $pid=$fileName[count($fileName)-2];
             $searchResultInstance=new SearchResult([],$pid);
