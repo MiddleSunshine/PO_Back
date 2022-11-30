@@ -2,12 +2,18 @@
 
 class FindSearch extends ElasticSearch{
     public $storeDataFilePath;
+    public $tempStoreResult;
     public function __construct()
     {
         $this->storeDataFilePath=MD_FILE_INDEX;
         if (!is_dir($this->storeDataFilePath)){
             mkdir($this->storeDataFilePath);
             chmod($this->storeDataFilePath,0777);
+        }
+        $this->tempStoreResult=INDEX_FILE."findResult.txt";
+        if (!is_dir($this->tempStoreResult)){
+            mkdir($this->tempStoreResult);
+            chmod($this->tempStoreResult,0777);
         }
     }
 
@@ -29,8 +35,9 @@ class FindSearch extends ElasticSearch{
 
     public function SearchMultipleFileds($index, $search, $source = 'ID')
     {
-        $cmd=sprintf("grep -irR %s %s*",$search,$this->storeDataFilePath);
-        $searchResult=exec($cmd);
+        $cmd=sprintf("grep -irR %s %s* > %s",$search,$this->storeDataFilePath,$this->tempStoreResult);
+        exec($cmd);
+        $searchResult=file_get_contents($this->tempStoreResult);
         $returnData=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
             $searchEachPart=explode(':',$item);
