@@ -10,7 +10,7 @@ class FindSearch extends ElasticSearch{
             mkdir($this->storeDataFilePath);
             chmod($this->storeDataFilePath,0777);
         }
-        $this->tempStoreResult=INDEX_FILE."findResult.txt";
+        $this->tempStoreResult=INDEX_FILE.DIRECTORY_SEPARATOR."findResult.txt";
         if (!is_dir($this->tempStoreResult)){
             mkdir($this->tempStoreResult);
             chmod($this->tempStoreResult,0777);
