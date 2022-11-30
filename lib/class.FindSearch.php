@@ -33,6 +33,7 @@ class FindSearch extends ElasticSearch{
     {
         $cmd=sprintf("grep -irR %s %s* > %s",$search,$this->storeDataFilePath,$this->tempStoreResult);
         exec($cmd);
+        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
         $searchResult=file_get_contents($this->tempStoreResult);
         $returnData=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
