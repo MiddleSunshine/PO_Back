@@ -46,7 +46,7 @@ class FindSearch extends ElasticSearch{
                 continue;
             }
             $searchResultInstance=new SearchResult([],$pid);
-            $searchResultInstance->setHighLight($highLisght);
+            $searchResultInstance->setHighLight('markdown_content',$highLisght);
             $returnData[]=$searchResultInstance;
         }
         return $returnData;
