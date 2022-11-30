@@ -2,7 +2,7 @@
 
 class Search extends Base{
     /**
-     * @var $elasticSearch Meilisearch
+     * @var $elasticSearch FindSearch
      */
     public $elasticSearch;
     private $elasticSearchIndex="Points";
@@ -15,6 +15,8 @@ class Search extends Base{
 
     const OPTION_SAVE="SAVE";
     const OPTION_DELETE='Delete';
+
+    public $doNotCheckLogin=true;
 
     public function syncData($limit=2000){
         try {
@@ -89,7 +91,7 @@ class Search extends Base{
             /**
              * @var $searchResultInstance SearchResult
              */
-            $returnData[$searchResultInstance->id]=[];
+            $returnData[$searchResultInstance->id]=$searchResultInstance->data;
         }
         return $returnData;
     }
@@ -141,6 +143,7 @@ class Search extends Base{
         }
         // 初始化elaticsearch
 //        $this->elasticSearch=new ElasticSearch();
-        $this->elasticSearch=new Meilisearch();
+//        $this->elasticSearch=new Meilisearch();
+        $this->elasticSearch=new FindSearch();
     }
 }

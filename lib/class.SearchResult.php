@@ -8,4 +8,8 @@ class SearchResult{
         $this->id=$id;
         $this->data=$item;
     }
+
+    public function setHighLight($content){
+        $this->data['Highlight']=$content;
+    }
 }
