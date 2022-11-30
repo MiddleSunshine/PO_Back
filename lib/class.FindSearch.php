@@ -34,6 +34,9 @@ class FindSearch extends ElasticSearch{
             $highLisght=implode(':',$searchEachPart);
             $fileName=explode(DIRECTORY_SEPARATOR,$fileName);
             $pid=$fileName[count($fileName)-2];
+            if (empty($pid)){
+                continue;
+            }
             $searchResultInstance=new SearchResult([],$pid);
             $searchResultInstance->setHighLight($highLisght);
             $returnData[]=$searchResultInstance;

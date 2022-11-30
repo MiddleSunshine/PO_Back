@@ -2,7 +2,7 @@
 
 class Search extends Base{
     /**
-     * @var $elasticSearch Meilisearch
+     * @var $elasticSearch FindSearch
      */
     public $elasticSearch;
     private $elasticSearchIndex="Points";
