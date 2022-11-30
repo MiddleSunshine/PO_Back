@@ -10,6 +10,7 @@ class SearchResult{
     }
 
     public function setHighLight($content){
-        $this->data['Highlight']=$content;
+        empty($this->data['Highlight']) && $this->data['Highlight']=[];
+        $this->data['Highlight'][]=$content;
     }
 }
