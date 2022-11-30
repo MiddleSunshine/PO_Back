@@ -46,6 +46,8 @@ class FindSearch extends ElasticSearch{
                 continue;
             }
             $searchResultInstance=new SearchResult([],$pid);
+            // fixme 这里返回的数据太大了，所以没有什么意义。加一点解析的代码
+            $highLisght='';
             $searchResultInstance->setHighLight('markdown_content',$highLisght);
             $returnData[]=$searchResultInstance;
         }
