@@ -16,6 +16,8 @@ class Search extends Base{
     const OPTION_SAVE="SAVE";
     const OPTION_DELETE='Delete';
 
+    public $doNotCheckLogin=true;
+
     public function syncData($limit=2000){
         try {
             $this->preCheck();

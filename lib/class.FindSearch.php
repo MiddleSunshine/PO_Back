@@ -18,7 +18,12 @@ class FindSearch extends ElasticSearch{
 
     public function StoreDocument($index, $ID, $storeData)
     {
-        file_put_contents($this->storeDataFilePath.$ID.DIRECTORY_SEPARATOR."FindSearch_setting",json_encode($storeData));
+        $storeDataDir=$this->storeDataFilePath.$ID.DIRECTORY_SEPARATOR;
+        if (!is_dir($storeDataDir)){
+            mkdir($storeDataDir);
+            chmod($storeDataDir,0777);
+        }
+        file_put_contents($storeDataDir."FindSearch_setting",json_encode($storeData));
         return true;
     }
 
