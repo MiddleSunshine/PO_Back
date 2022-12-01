@@ -61,7 +61,7 @@ class FindSearch extends ElasticSearch{
             $highLight=implode(':',$searchEachPart);
             $fileName=explode(DIRECTORY_SEPARATOR,$fileName);
             $pid=$fileName[count($fileName)-2];
-            if (isset($pid)){
+            if (isset($pids[$pid])){
                 continue;
             }
             if (empty($pid)){
