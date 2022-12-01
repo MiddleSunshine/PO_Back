@@ -31,7 +31,25 @@ class FindSearch extends ElasticSearch{
 
     public function SearchMultipleFileds($index, $search, $source = 'ID')
     {
-        $cmd=sprintf("grep -irR %s %s* > %s",$search,$this->storeDataFilePath,$this->tempStoreResult);
+        if (strpos($search,' ')!==false){
+            $searchs=explode(' ',$search);
+            $returnData=[];
+            foreach ($searchs as $search){
+                $returnData=array_merge($returnData,$this->SearchMultipleFileds($index,$search,$source));
+            }
+            return $returnData;
+        }
+        $seprate="'";
+        if (strpos($search,'"')!==false){
+            $seprate="'";
+        }
+        if (strpos($search,"'")!==false){
+            $seprate='"';
+        }
+        if (strpos($search,'"')!==false && strpos($search,"'")!==false){
+            $seprate='';
+        }
+        $cmd=sprintf("grep -irR %s%s%s %s* > %s",$seprate,$search,$seprate,$this->storeDataFilePath,$this->tempStoreResult);
         exec($cmd);
         exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
         $searchResult=file_get_contents($this->tempStoreResult);
