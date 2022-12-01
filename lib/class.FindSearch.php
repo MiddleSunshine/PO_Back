@@ -57,24 +57,30 @@ class FindSearch extends ElasticSearch{
             $searchEachPart=explode(':',$item);
             $fileName=$searchEachPart[0];
             unset($searchEachPart[0]);
-            $highLisght=implode(':',$searchEachPart);
+            $highLight=implode(':',$searchEachPart);
             $fileName=explode(DIRECTORY_SEPARATOR,$fileName);
             $pid=$fileName[count($fileName)-2];
             if (empty($pid)){
                 continue;
             }
-            switch ($fileName[count($fileName)-1]){
+            $fName=$fileName[count($fileName)-1];
+            switch ($fName){
                 case "笔记.md":
-                    $highLisght=file_get_contents($searchResult[0]);
+                    $highLight=file_get_contents($searchResult[0]);
                     break;
                 case 'MindNoteFile.json':
-                    $highLisght="Search Content In the WhiteBord";
+                    $highLight="Search Content In the WhiteBord";
                     break;
                 default:
-                    $highLisght="Search Content In the Point or tldraw";
+                    if (str_contains($fName,'json')){
+                        $highLight="Search Content in the tldraw ({$fName})";
+                    }else{
+                        $highLight="Search Content In the Point";
+                    }
+
             }
             $searchResultInstance=new SearchResult([],$pid);
-            $searchResultInstance->setHighLight('markdown_content',$highLisght);
+            $searchResultInstance->setHighLight('markdown_content',$highLight);
             $returnData[]=$searchResultInstance;
         }
         return $returnData;
