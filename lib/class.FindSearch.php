@@ -64,9 +64,17 @@ class FindSearch extends ElasticSearch{
             if (empty($pid)){
                 continue;
             }
+            switch ($fileName[count($fileName)-1]){
+                case "笔记.md":
+                    $highLisght=file_get_contents($searchResult[0]);
+                    break;
+                case 'MindNoteFile.json':
+                    $highLisght="Search Content In the WhiteBord";
+                    break;
+                default:
+                    $highLisght="Search Content In the Point or tldraw";
+            }
             $searchResultInstance=new SearchResult([],$pid);
-            // fixme 这里返回的数据太大了，所以没有什么意义。加一点解析的代码
-            $highLisght='';
             $searchResultInstance->setHighLight('markdown_content',$highLisght);
             $returnData[]=$searchResultInstance;
         }
