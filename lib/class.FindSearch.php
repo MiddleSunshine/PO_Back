@@ -31,14 +31,14 @@ class FindSearch extends ElasticSearch{
 
     public function SearchMultipleFileds($index, $search, $source = 'ID')
     {
-        if (strpos($search,' ')!==false){
-            $searchs=explode(' ',$search);
-            $returnData=[];
-            foreach ($searchs as $search){
-                $returnData=array_merge($returnData,$this->SearchMultipleFileds($index,$search,$source));
-            }
-            return $returnData;
-        }
+//        if (strpos($search,' ')!==false){
+//            $searchs=explode(' ',$search);
+//            $returnData=[];
+//            foreach ($searchs as $search){
+//                $returnData=array_merge($returnData,$this->SearchMultipleFileds($index,$search,$source));
+//            }
+//            return $returnData;
+//        }
         if (str_contains($search, '"')){
             $separate="'";
         }
