@@ -33,6 +33,7 @@ class FindSearch extends ElasticSearch{
     {
         $cmd=sprintf("grep -irR %s %s* > %s",$search,$this->storeDataFilePath,$this->tempStoreResult);
         exec($cmd);
+        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
         $searchResult=file_get_contents($this->tempStoreResult);
         $returnData=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
@@ -46,7 +47,9 @@ class FindSearch extends ElasticSearch{
                 continue;
             }
             $searchResultInstance=new SearchResult([],$pid);
-            $searchResultInstance->setHighLight($highLisght);
+            // fixme 这里返回的数据太大了，所以没有什么意义。加一点解析的代码
+            $highLisght='';
+            $searchResultInstance->setHighLight('markdown_content',$highLisght);
             $returnData[]=$searchResultInstance;
         }
         return $returnData;

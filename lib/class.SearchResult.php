@@ -9,8 +9,8 @@ class SearchResult{
         $this->data=$item;
     }
 
-    public function setHighLight($content){
+    public function setHighLight($key,$content){
         empty($this->data['Highlight']) && $this->data['Highlight']=[];
-        $this->data['Highlight'][]=$content;
+        $this->data['Highlight'][$key]=$content;
     }
 }

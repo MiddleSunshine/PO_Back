@@ -181,7 +181,7 @@ class Points extends Base{
             if (isset($searchResult[$point['ID']])){
                 $highlight=$searchResult[$point['ID']]['Highlight'] ?? [];
                 foreach ($highlight as $field=>&$items){
-                    $items=implode(PHP_EOL.PHP_EOL,$items);
+                    is_array($items) && $items=implode(PHP_EOL.PHP_EOL,$items);
                     $highlight[$field]=$items;
                 }
                 $point['Highlight']=$highlight;
