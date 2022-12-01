@@ -143,7 +143,7 @@ class Search extends Base{
         }
         // 初始化elaticsearch
 //        $this->elasticSearch=new ElasticSearch();
-        $this->elasticSearch=new Meilisearch();
-//        $this->elasticSearch=new FindSearch();
+//        $this->elasticSearch=new Meilisearch();
+        $this->elasticSearch=new FindSearch();
     }
 }
