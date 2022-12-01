@@ -70,7 +70,7 @@ class FindSearch extends ElasticSearch{
             $fName=$fileName[count($fileName)-1];
             switch ($fName){
                 case "笔记.md":
-//                    $highLight=file_get_contents($searchResult[0]);
+                    $highLight=str_replace($search,sprintf("<font color='red'>%s</font>",$search),$highLight);
                     $pids[$pid]=1;
                     break;
                 case 'MindNoteFile.json':
