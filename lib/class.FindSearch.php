@@ -53,6 +53,7 @@ class FindSearch extends ElasticSearch{
 //        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
         $searchResult=file_get_contents($this->tempStoreResult);
         $returnData=[];
+        $pids=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
             $searchEachPart=explode(':',$item);
             $fileName=$searchEachPart[0];
@@ -60,6 +61,9 @@ class FindSearch extends ElasticSearch{
             $highLight=implode(':',$searchEachPart);
             $fileName=explode(DIRECTORY_SEPARATOR,$fileName);
             $pid=$fileName[count($fileName)-2];
+            if (isset($pid)){
+                continue;
+            }
             if (empty($pid)){
                 continue;
             }
@@ -67,17 +71,19 @@ class FindSearch extends ElasticSearch{
             switch ($fName){
                 case "笔记.md":
                     $highLight=file_get_contents($searchResult[0]);
+                    $pids[$pid]=1;
                     break;
                 case 'MindNoteFile.json':
                     $highLight="Search Content In the WhiteBord";
+                    $pids[$pid]=1;
                     break;
                 default:
                     if (str_contains($fName,'json')){
                         $highLight="Search Content in the tldraw ({$fName})";
+                        $pids[$pid]=1;
                     }else{
                         $highLight="Search Content In the Point";
                     }
-
             }
             $searchResultInstance=new SearchResult([],$pid);
             $searchResultInstance->setHighLight('markdown_content',$highLight);
