@@ -39,19 +39,18 @@ class FindSearch extends ElasticSearch{
             }
             return $returnData;
         }
-        $seprate="'";
-        if (strpos($search,'"')!==false){
-            $seprate="'";
+        if (str_contains($search, '"')){
+            $separate="'";
         }
-        if (strpos($search,"'")!==false){
-            $seprate='"';
+        if (str_contains($search, "'")){
+            $separate='"';
         }
-        if (strpos($search,'"')!==false && strpos($search,"'")!==false){
-            $seprate='';
+        if (str_contains($search, '"') && str_contains($search, "'")){
+            $separate='';
         }
-        $cmd=sprintf("grep -irR %s%s%s %s* > %s",$seprate,$search,$seprate,$this->storeDataFilePath,$this->tempStoreResult);
+        $cmd=sprintf("grep -irR %s%s%s %s* > %s",$separate,$search,$separate,$this->storeDataFilePath,$this->tempStoreResult);
         exec($cmd);
-        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
+//        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
         $searchResult=file_get_contents($this->tempStoreResult);
         $returnData=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
