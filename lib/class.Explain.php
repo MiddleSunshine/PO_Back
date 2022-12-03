@@ -19,7 +19,7 @@ class Explain extends Base{
 
     public function NewExplain(){
         $this->post=json_decode($this->post,1);
-        if(empty($this->post['Explain'])){
+        if(empty($this->post['ExplainData'])){
             return self::returnActionResult($this->post,false,'Please Input The Explain');
         }
         $this->post['AddTime']=date("Y-m-d H:i:s");
