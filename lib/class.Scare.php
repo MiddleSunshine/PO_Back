@@ -24,7 +24,7 @@ class Scare extends Base{
         $sql=sprintf("select * from %s where Status='%s' %s order by ID desc;",self::$table,$status,$where);
         $scares=$this->pdo->getRows($sql);
         $scareExplain=new Explain();
-        foreach ($scares as $scare){
+        foreach ($scares as &$scare){
             $scare['Explains']=$scareExplain->getExplains($scare['ID']);
         }
         return self::returnActionResult([
