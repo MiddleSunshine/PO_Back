@@ -16,7 +16,12 @@ class Scare extends Base{
 
     public function ScareList(){
         $status=$this->get['Status'] ?? self::STATUS_ACTIVE;
-        $sql=sprintf("select * from %s where Status='%s' order by ID desc;",self::$table,$status);
+        if (empty($this->get['PID'])){
+            $where='';
+        }else{
+            $where='and PID='.$this->get['PID'];
+        }
+        $sql=sprintf("select * from %s where Status='%s' %s order by ID desc;",self::$table,$status,$where);
         $scares=$this->pdo->getRows($sql);
         $scareExplain=new Explain();
         foreach ($scares as $scare){
