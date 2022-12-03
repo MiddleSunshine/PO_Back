@@ -3,6 +3,20 @@
 class Explain extends Base{
     public static $table='Scare_Explain';
 
+    public function ExplainList(){
+        $scareID=$this->get['Scare_ID'] ?? 0;
+        if (empty($scareID)){
+            return self::returnActionResult($this->get,false,'Param Error');
+        }
+        $sql=sprintf("select * from %s where Scare_ID=%d order by ID desc;",self::$table,$scareID);
+        $explains=$this->pdo->getRows($sql);
+        return self::returnActionResult(
+            [
+                'Explains'=>$explains
+            ]
+        );
+    }
+
     public function NewExplain(){
         $this->post=json_decode($this->post,1);
         if(empty($this->post['Explain'])){
