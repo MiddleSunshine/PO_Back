@@ -31,51 +31,62 @@ class FindSearch extends ElasticSearch{
 
     public function SearchMultipleFileds($index, $search, $source = 'ID')
     {
-        if (strpos($search,' ')!==false){
-            $searchs=explode(' ',$search);
-            $returnData=[];
-            foreach ($searchs as $search){
-                $returnData=array_merge($returnData,$this->SearchMultipleFileds($index,$search,$source));
-            }
-            return $returnData;
+//        if (strpos($search,' ')!==false){
+//            $searchs=explode(' ',$search);
+//            $returnData=[];
+//            foreach ($searchs as $search){
+//                $returnData=array_merge($returnData,$this->SearchMultipleFileds($index,$search,$source));
+//            }
+//            return $returnData;
+//        }
+        if (str_contains($search, '"')){
+            $separate="'";
         }
-        $seprate="'";
-        if (strpos($search,'"')!==false){
-            $seprate="'";
+        if (str_contains($search, "'")){
+            $separate='"';
         }
-        if (strpos($search,"'")!==false){
-            $seprate='"';
+        if (str_contains($search, '"') && str_contains($search, "'")){
+            $separate='';
         }
-        if (strpos($search,'"')!==false && strpos($search,"'")!==false){
-            $seprate='';
-        }
-        $cmd=sprintf("grep -irR %s%s%s %s* > %s",$seprate,$search,$seprate,$this->storeDataFilePath,$this->tempStoreResult);
+        $cmd=sprintf("grep -irR %s%s%s %s* > %s",$separate,$search,$separate,$this->storeDataFilePath,$this->tempStoreResult);
         exec($cmd);
-        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
+//        exec(sprintf("echo '%s' >> %s",$cmd,$this->tempStoreResult));
         $searchResult=file_get_contents($this->tempStoreResult);
         $returnData=[];
+        $pids=[];
         foreach (explode(PHP_EOL,$searchResult) as $item){
             $searchEachPart=explode(':',$item);
             $fileName=$searchEachPart[0];
             unset($searchEachPart[0]);
-            $highLisght=implode(':',$searchEachPart);
+            $highLight=implode(':',$searchEachPart);
             $fileName=explode(DIRECTORY_SEPARATOR,$fileName);
             $pid=$fileName[count($fileName)-2];
+            if (isset($pids[$pid])){
+                continue;
+            }
             if (empty($pid)){
                 continue;
             }
-            switch ($fileName[count($fileName)-1]){
+            $fName=$fileName[count($fileName)-1];
+            switch ($fName){
                 case "笔记.md":
-                    $highLisght=file_get_contents($searchResult[0]);
+                    $highLight=str_replace($search,sprintf("<font color='red'>%s</font>",$search),$highLight);
+                    $pids[$pid]=1;
                     break;
                 case 'MindNoteFile.json':
-                    $highLisght="Search Content In the WhiteBord";
+                    $highLight="Search Content In the WhiteBord";
+                    $pids[$pid]=1;
                     break;
                 default:
-                    $highLisght="Search Content In the Point or tldraw";
+                    if (str_contains($fName,'json')){
+                        $highLight="Search Content in the tldraw ({$fName})";
+                        $pids[$pid]=1;
+                    }else{
+                        $highLight="Search Content In the Point";
+                    }
             }
             $searchResultInstance=new SearchResult([],$pid);
-            $searchResultInstance->setHighLight('markdown_content',$highLisght);
+            $searchResultInstance->setHighLight('markdown_content',$highLight);
             $returnData[]=$searchResultInstance;
         }
         return $returnData;
