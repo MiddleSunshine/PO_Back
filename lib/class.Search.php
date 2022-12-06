@@ -82,16 +82,20 @@ class Search extends Base{
         if (empty($keyword)){
             return [];
         }
-        $searchResult=$this->elasticSearch->SearchMultipleFileds(
-            $this->elasticSearchIndex,
-            $keyword
-        );
+        $sameKeywords=new SameKeyword();
+        $keywords=$sameKeywords->isSameKeyword($keyword);
         $returnData=[];
-        foreach ($searchResult as $searchResultInstance){
-            /**
-             * @var $searchResultInstance SearchResult
-             */
-            $returnData[$searchResultInstance->id]=$searchResultInstance->data;
+        foreach ($keywords as $keyword){
+            $searchResult=$this->elasticSearch->SearchMultipleFileds(
+                $this->elasticSearchIndex,
+                $keyword
+            );
+            foreach ($searchResult as $searchResultInstance){
+                /**
+                 * @var $searchResultInstance SearchResult
+                 */
+                $returnData[$searchResultInstance->id]=$searchResultInstance->data;
+            }
         }
         return $returnData;
     }
