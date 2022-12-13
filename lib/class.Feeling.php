@@ -25,9 +25,13 @@ class Feeling extends Base{
     }
 
     public function List(){
-        $startTime=empty($this->get['StartTime'])?date("Y-m-d 00:00:00",strtotime("-7 days")):$this->get['StartTime'];
-        $endTime=empty($this->get['EndTime'])?date("Y-m-d H:i:s"):$this->get['EndTime'];
-        $sql=sprintf("select * from %s where AddTime between '%s' and '%s' order by ID desc;",self::$table,$startTime,$endTime);
+        $startTime=empty($this->get['StartTime'])?'':$this->get['StartTime'];
+        $endTime=empty($this->get['EndTime'])?'':$this->get['EndTime'];
+        if ($startTime && $endTime){
+            $sql=sprintf("select * from %s where AddTime between '%s' and '%s' order by ID desc;",self::$table,$startTime,$endTime);
+        }else{
+            $sql=sprintf("select * from %s order by ID desc;",self::$table);
+        }
         $feelings=$this->pdo->getRows($sql);
         $storeData=$returnData=[];
         foreach ($feelings as $felling){
